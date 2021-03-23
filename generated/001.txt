@@ -1,0 +1,15 @@
+<div class="row"><div class="col-2"></div><main class="col-8"><h2>The Best Implementation of Them All</h2>
+<p class="font-weight-light font-italic">2020-03-23</p>
+<p class="text-justify">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Donec adipiscing tristique risus nec feugiat in fermentum. Morbi leo urna molestie at elementum eu. Imperdiet nulla malesuada pellentesque elit eget gravida cum sociis. Semper eget duis at tellus at urna condimentum. Vel facilisis volutpat est velit egestas dui id. Scelerisque felis imperdiet proin fermentum leo vel orci porta. Odio ut sem nulla pharetra diam sit amet. Interdum velit laoreet id donec ultrices tincidunt arcu. Fames ac turpis egestas maecenas pharetra convallis. Commodo elit at imperdiet dui accumsan sit amet nulla facilisi. Vitae tortor condimentum lacinia quis vel.</p>
+<pre><code class="language-csharp">public class MyClass
+{
+    // Properties
+    public int Age { get; set; }
+    public string Name { get; set; }
+}</code></pre>
+<p class="text-justify">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Donec adipiscing tristique risus nec feugiat in fermentum. Morbi leo urna molestie at elementum eu. Imperdiet nulla malesuada pellentesque elit eget gravida cum sociis. Semper eget duis at tellus at urna condimentum. Vel facilisis volutpat est velit egestas dui id. Scelerisque felis imperdiet proin fermentum leo vel orci porta. Odio ut sem nulla pharetra diam sit amet. Interdum velit laoreet id donec ultrices tincidunt arcu. Fames ac turpis egestas maecenas pharetra convallis. Commodo elit at imperdiet dui accumsan sit amet nulla facilisi. Vitae tortor condimentum lacinia quis vel.</p></p>
+<pre><code class="language-json">{
+    "prop": "value",
+    "thing": []
+}</code></pre>
+<div class="col-2"></div></div>
