@@ -33,9 +33,40 @@ namespace Blog.Generator
                 var hasTitle = false;
                 var hasDate = false;
                 var isInCodeBlock = false;
+                var isInList = false;
+                var isOrderedList = false;
 
                 foreach (var line in lines)
                 {
+                    if (line.StartsWith('-') || line.StartsWith('#'))
+                    {
+                        if (!isInList)
+                        {
+                            isInList = true;
+                            
+                            if (line.StartsWith('-'))
+                            {
+                                output.AppendLine("<ul>");
+                            }
+                            else
+                            {
+                                output.AppendLine("<ol>");
+                            }
+                        }
+                    }
+                    else if (isInList)
+                    {
+                        isInList = false;
+
+                        if (isOrderedList)
+                        {
+                            output.AppendLine("</ol>");
+                        }
+                        else
+                        {
+                            output.AppendLine("</ul>");
+                        }
+                    }
                     if (!hasTitle)
                     {
                         output.AppendLine($"<h2>{line}</h2>");
@@ -65,6 +96,10 @@ namespace Blog.Generator
                     else if (isInCodeBlock)
                     {
                         output.AppendLine(line);
+                    }
+                    else if (line.StartsWith('-') || line.StartsWith('#'))
+                    {
+                        output.AppendLine($"<li>{line.AsSpan(2)}</li>");
                     }
                     else
                     {

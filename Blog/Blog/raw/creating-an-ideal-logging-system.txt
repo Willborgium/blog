@@ -1,0 +1,224 @@
+Creating an Ideal Logging System
+2015-07-17
+This is the first article I am writing and decided to tackle a fairly straightforward topic. Every application I’ve worked on that was larger than a proof-of-concept benefited from some form of logging. The problem always was one of the following:
+- There was no logging system at all
+- The logging system was cumbersome to actually use
+- The logging system logged way too much information
+- The logging system wasn’t used in the most critical areas
+So the first point is going to be solved simply by reading this article. We are going to walk through creating a simple yet useful logging system that is extendible and solves the above problems. Without further ado, let’s begin!
+Before we begin, you can use the code <a href="https://pastebin.com/SwvHAF87">posted here</a> as reference for this article (or if you’re just returning here for the link).
+Actually, let’s set some context first. There’s always the initial debate of whether to make the logging system static. At first glance, it makes a lot of sense to have the system be static. This entirely depends on how you want to manage the lifetime of the logging object, and how you want to group the data that is being logged. For example, in a desktop application it might make perfect sense to have the system be static because only a single user or session will be active at one time so every notification that gets logged is part of that same session or belongs to that same user. However, in a web application (or any other service) that is consumed concurrently by many sessions or users, you may not want to do all of the work of having a thread-safe keyed collection of notifications to separate the notifications, or just pool up all of your notifications in one collection. We’ll talk about a strategy for persisting these notifications after. As a programmer at heart, I’m itching to write some code.
+///code#csharp
+public class LoggingService
+{
+    public LoggingService()
+    {
+        _notifications = new List<string>();
+    }
+ 
+    public void Notify(string message)
+    {
+        _notifications.Add(message);
+    }
+ 
+    private List<string> _notifications;
+}
+///code
+Okay, great! We can knock the first problem off the list; we now actually have a logging system. But it sucks, so we need to expand upon this. Right now, all we can do is say something and this system holds on to it. Now I’m going to lay down a couple of typical things I want my logging system to be able to track (in plain English):
+///code#csharp
+Noise: Some business logic step occurred.
+Warning: Parameter 'accountId' is null.
+Exception: Object reference not set to an instance of type Object.
+///code
+Given that, the current system does not easily facilitate dynamically construction that type of information. We must keep in mind that we don’t want this system to be seriously heavy, either in terms of clock cycles or memory footprint; performance issues should never come from ancillary systems. Thinking about what common factors exist within the few messages I’ve defined above, we can identify the following information:
+- They have varying levels of importance
+- They have text messages to display
+- Some messages have dynamic components to them
+Let’s start by simply creating an enumeration for the first bullet point.
+///code#csharp
+public enum NotificationLevel
+{
+    Noise,
+    Warning,
+    Exception
+}
+///code
+We must now extend our implementation to support this. If we modify the Notify method to accept this additional piece of information, we should be good.
+///code#csharp
+public void Notify(NotificationLevel level, string message)
+{
+    _notifications.Add(string.Format("{0}: {1}", level, message));
+}
+///code
+This is better and the messages it produces mirror those that I’ve written out above. Before we continue I’d like to identify a foreseeable problem with this system. If we continue to add arguments to this method, we’re doing some custom baked in logic to crush all of that useful information provided to us into a string. If we created a class that contained all of this information, it would certainly be more malleable when necessary. Imagine trying to look at these strings and determine which ones are noise and which are exceptions (programmatically, that is). It would be a waste of clock cycles when you could just create a class to contain this information. So we’re going to make an adjustment to our class as a whole and continue from this point. Now our code looks a little like this:
+///code#csharp
+public class Notification
+{
+    public NotificationLevel Level { get; set; }
+ 
+    public string Message { get; set; }
+ 
+    public Notification(NotificationLevel level, string message)
+    {
+        Level = level;
+ 
+        Message = message;
+    }
+ 
+    public override string ToString()
+    {
+        return string.Format("{0}: {1}", Level, Message);
+    }
+}
+  
+public class LoggingService
+{
+    public LoggingService()
+    {
+        _notifications = new List<Notification>();
+    }
+ 
+    public void Notify(NotificationLevel level, string message)
+    {
+        _notifications.Add(new Notification(level, message));
+    }
+ 
+    private List<Notification> _notifications;
+}
+///code
+Now we have some structure to this. Notice that the logic that formats this has been moved to the Notification class’s ToString override? This makes a lot more sense because it is specifically related to how the Notification looks when it is a string, not “What the logging system thinks it should look like as a string”.
+Things are looking better, but we’re still missing some key features from an API usability standpoint. Sometimes messages provided are static, but some are dynamic. We can definitely expand our method to be able to do the string formatting internally for the user.
+///code#csharp
+public void Notify(NotificationLevel level, string format, params object[] args)
+{
+    _notifications.Add(new Notification(level, string.Format(format, args)));
+}
+///code
+The simple addition of a params array allows us to make this method even more user friendly. Now we can fully construct all of the messages listed above simply. Here’s what they would look like in code:
+- Noise: Some business logic step occurred.
+///code#csharp
+system.Notify(NotificationLevel.Noise, "Some business logic step occurred.");
+///code
+- Warning: Parameter ‘accountId’ is null.
+///code#csharp
+system.Notify(NotificationLevel.Warning, "Parameter '{0}' is null.", nameof(accountId));
+///code
+- Exception: Object reference not set to an instance of type Object.
+///code#csharp
+catch(Exception err)
+{
+    system.Notify(NotificationLevel.Exception, err.Message);
+    throw;
+}
+///code
+From here, if we look back at the original problems, we can see we have handily done away with two of the four of them.
+- <strike>There was no logging system at all</strike>
+- <strike>The logging system was cumbersome to actually use</strike>
+- The logging system logged way too much information
+- The logging system wasn’t used in the most critical areas
+The last two points are both half solved, and I’ll explain why, because they’re intimately related. Too much logging is never a bad thing. Not being able to filter the important from the noise is the real problem. Too often I see systems where there isn’t enough separation in logging to make it useful for both debugging purposes and identifying critical failures. You should be able to see, very quickly, when a production system is throwing an exception. Additionally, you should be able to see every step of the business logic that led up to that exception. This is often hard to define, because developers tend to think in binary when it comes to logging: it is either a huge problem that this message is being generated or it’s just for my own debugging purposes. It is often hard to identify when some piece of code can safely fail and the system can continue. It is this information that we also want to categorize (and if you have a team of disciplined developers, you can continue to add further categorizations).
+So the best thing we can do to combat the lack of logging critical issues is to log as much as possible! Did an exception just fire? Log it. Did a decimal.TryParse return false? Log it. Did you just enter a method? Log it.
+So this completely ignores the third problem, and rightfully so. We should be logging everything we can. To solve the third problem can be solved by properly categorizing your information and architecting your data structures correctly. If we take a look back at the Notification class we can quickly identify that it’s missing a critical piece of information: when it happened! We can add a DateTime property and initialize it in our constructor with the current date. Additionally, the last piece of information that would be helpful during debugging is the stack trace. I’ll abridge the explanation of how to get that and just jump to the code. Here’s what our updated Notification looks like:
+///code#csharp
+public class Notification
+{
+    public DateTime TimeStamp { get; set; }
+ 
+    public NotificationLevel Level { get; set; }
+ 
+    public string Message { get; set; }
+ 
+    public string StackTrace { get; set; }
+ 
+    public Notification(NotificationLevel level, string message)
+    {
+        TimeStamp = DateTime.Now;
+ 
+        StackTrace = new System.Diagnostics.StackTrace().ToString();
+ 
+        Level = level;
+ 
+        Message = message;
+    }
+ 
+    public override string ToString()
+    {
+        return string.Format("{0}: {1}", Level, Message);
+    }
+}
+///code
+A note about StackTrace: it is very slow. In production code you would only want to keep the stack trace in case of an exception. But for this example we will catch it for everything. We now have all of the information necessary for verbose, useful, categorical logging. With one of these Notifications we can quickly identify when and where something happened, what happened, and how serious it was. But with all this extra data, there are a couple of additional methods we want to add to our service to make it very user friendly. First, let’s make it really easy to add message that is just noise.
+///code#csharp
+public void Notify(string format, params object[] args)
+{
+    Notify(NotificationLevel.Noise, format, args);
+}
+///code
+The other case I want to mention is exceptions. The way we are currently setting StackTrace is not going to be correct in the case of an exception. We should handle exceptions a little differently. We’ll add the following constructor to our Notification class:
+///code#csharp
+public Notification(Exception err)
+{
+    TimeStamp = DateTime.Now;
+ 
+    StackTrace = err.StackTrace;
+ 
+    Level = NotificationLevel.Exception;
+ 
+    Message = err.Message;
+}
+///code
+And the following method to our logging service:
+///code#csharp
+public void Notify(Exception err)
+{
+    _notifications.Add(new Notification(err));
+}
+///code
+Now with this, we are capable of logging a variety of different types of messages as simply as possible. Now what? Well, if you haven’t noticed, although we’re logging our notifications of everything and have solved our initial problems, we haven’t actually done anything useful. When the application closes or the app pool spins down, we lose all of this information. We’re going to need some way of persisting this information. The actual persistence of this information will be left up to you, but I’m going to show you the steps to take to make this system extensible for “doing something” with the notifications.
+We’re going to simply implement our logging system as an observable object. We’re not going to dive deep into this pattern in this article, so let’s look at the interface we need to define for our subscribers:
+///code#csharp
+public interface INotificationSubscriber
+{
+    void ReceiveNotification(Notification notification);
+}
+///code
+Pretty simple? Subscribers just need to be able to receive notifications. This immediately becomes useful because we can create a stream, essentially, to our database for these messages. You can then implement other mechanisms (like caching and waiting until a certain number have been held to flush the cache into the database, etc.) that make a particular subscriber more useful. You can also use a particular subscriber in lower environments and have one in production that is high performance, or whatever! We now need to modify our logging system slightly to accommodate this change. First we need to give subscribers the ability to subscribe.
+///code#csharp
+public class LoggingService
+{
+    public LoggingService()
+    {
+         _notifications = new List<Notification>();
+ 
+         _subscribers = new List<INotificationSubscriber>();
+    }
+ 
+    // Notify methods removed for clarity
+ 
+    public void Subscribe(INotificationSubscriber subscriber)
+    {
+        _subscribers.Add(subscriber);
+    }
+ 
+    public void Unsubscribe(INotificationSubscriber subscriber)
+    {
+        _subscribers.Remove(subscriber);
+    }
+  
+    private List<INotificationSubscriber> _subscribers;
+ 
+    private List<Notification> _notifications;
+}
+///code
+Now that subscribers can be added and removed, we’re ready to actually notify them. We can encapsulate this in a method and use it in our Notify methods.
+///code#csharp
+protected void NotifySubscribers(Notification notification)
+{
+    foreach(var subscriber in _subscribers)
+    {
+        subscriber.ReceiveNotification(notification);
+    }
+}
+///code
+That’s everything! This system is ready for some mainstream consumption. There are minor tweaks you can make based on your domain to make this system more friendly or performant given your needs, but this is a solution to all of the problems we initially listed and is now extendable for future development projects.
+The full source for this post is <a href="https://pastebin.com/SwvHAF87">available here</a>.
