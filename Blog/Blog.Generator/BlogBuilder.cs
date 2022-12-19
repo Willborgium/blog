@@ -8,113 +8,136 @@ namespace Blog.Generator
 {
     public class BlogBuilder
     {
-        public async Task GenerateArticles()
+        private const string TemplatePath = "blog-post-template.html";
+        private const string InputDirectory = "c:/source/blog/raw";
+        private const string OutputDirectory = "c:/source/blog/Blog/Blog.Web/wwwroot/blog";
+
+        public async Task GenerateArticlesAsync()
         {
-            var rawPath = "c:/source/blog/raw";
-            var outputPath = "c:/source/blog/generated";
-
-            var rawFilePaths = Directory.EnumerateFiles(rawPath);
-
-            foreach (var rawFilePath in rawFilePaths)
+            foreach (var rawFilePath in Directory.EnumerateFiles(InputDirectory))
             {
-                Console.WriteLine($"Building {rawFilePath}");
+                await GenerateFileAsync(rawFilePath);
+            }
+        }
 
-                string content = null;
+        private async Task GenerateFileAsync(string inputPath)
+        {
+            Console.WriteLine($">> Reading {inputPath}");
 
-                using (var reader = new StreamReader(rawFilePath))
+            string content = null;
+
+            using (var reader = new StreamReader(inputPath))
+            {
+                content = await reader.ReadToEndAsync();
+            }
+
+            var lines = content.Split(Environment.NewLine);
+
+            var output = new StringBuilder();
+
+            var hasTitle = false;
+            var hasDate = false;
+            var isInCodeBlock = false;
+            var isInList = false;
+            var isOrderedList = false;
+
+            foreach (var line in lines)
+            {
+                if (line.StartsWith('-') || line.StartsWith('#'))
                 {
-                    content = await reader.ReadToEndAsync();
+                    if (!isInList)
+                    {
+                        isInList = true;
+
+                        if (line.StartsWith('-'))
+                        {
+                            output.AppendLine("<ul>");
+                        }
+                        else
+                        {
+                            output.AppendLine("<ol>");
+                        }
+                    }
                 }
-
-                var lines = content.Split(Environment.NewLine);
-
-                var output = new StringBuilder();
-
-                var hasTitle = false;
-                var hasDate = false;
-                var isInCodeBlock = false;
-                var isInList = false;
-                var isOrderedList = false;
-
-                foreach (var line in lines)
+                else if (isInList)
                 {
-                    if (line.StartsWith('-') || line.StartsWith('#'))
-                    {
-                        if (!isInList)
-                        {
-                            isInList = true;
-                            
-                            if (line.StartsWith('-'))
-                            {
-                                output.AppendLine("<ul>");
-                            }
-                            else
-                            {
-                                output.AppendLine("<ol>");
-                            }
-                        }
-                    }
-                    else if (isInList)
-                    {
-                        isInList = false;
+                    isInList = false;
 
-                        if (isOrderedList)
-                        {
-                            output.AppendLine("</ol>");
-                        }
-                        else
-                        {
-                            output.AppendLine("</ul>");
-                        }
-                    }
-                    if (!hasTitle)
+                    if (isOrderedList)
                     {
-                        output.AppendLine($"<h2>{line}</h2>");
-                        hasTitle = true;
-                    }
-                    else if (!hasDate)
-                    {
-                        output.AppendLine($"<p class=\"font-weight-light font-italic\">{line}</p>");
-                        hasDate = true;
-                    }
-                    else if (line.StartsWith("///code"))
-                    {
-                        if (isInCodeBlock)
-                        {
-                            var newLineLength = Environment.NewLine.Length;
-                            output.Remove(output.Length - newLineLength, newLineLength);
-                            output.AppendLine("</code></pre>");
-                        }
-                        else
-                        {
-                            var language = line.Split("#").Last();
-                            output.Append($"<pre><code class=\"language-{language}\">");
-                        }
-
-                        isInCodeBlock = !isInCodeBlock;
-                    }
-                    else if (isInCodeBlock)
-                    {
-                        output.AppendLine(line);
-                    }
-                    else if (line.StartsWith('-') || line.StartsWith('#'))
-                    {
-                        output.AppendLine($"<li>{line.AsSpan(2)}</li>");
+                        output.AppendLine("</ol>");
                     }
                     else
                     {
-                        output.AppendLine($"<p class=\"text-justify\">{line}</p>");
+                        output.AppendLine("</ul>");
                     }
                 }
-
-                var outputName = Path.GetFileName(rawFilePath);
-
-                using (var writer = new StreamWriter(Path.Combine(outputPath, outputName)))
+                if (!hasTitle)
                 {
-                    var format = "<div class=\"row\"><div class=\"col-2\"></div><main class=\"col-8\">{0}<div class=\"col-2\"></div></div>";
-                    await writer.WriteAsync(string.Format(format, output));
+                    output.AppendLine($"<h2>{line}</h2>");
+                    hasTitle = true;
+                }
+                else if (!hasDate)
+                {
+                    output.AppendLine($"<p class=\"font-weight-light font-italic\">{line}</p>");
+                    hasDate = true;
+                }
+                else if (line.StartsWith("///code"))
+                {
+                    if (isInCodeBlock)
+                    {
+                        var newLineLength = Environment.NewLine.Length;
+                        output.Remove(output.Length - newLineLength, newLineLength);
+                        output.AppendLine("</code></pre>");
+                    }
+                    else
+                    {
+                        var language = line.Split("#").Last();
+                        output.Append($"<pre><code class=\"language-{language}\">");
+                    }
+
+                    isInCodeBlock = !isInCodeBlock;
+                }
+                else if (isInCodeBlock)
+                {
+                    output.AppendLine(line);
+                }
+                else if (line.StartsWith('-') || line.StartsWith('#'))
+                {
+                    output.AppendLine($"<li>{line.AsSpan(2)}</li>");
+                }
+                else
+                {
+                    output.AppendLine($"<p class=\"text-justify\">{line}</p>");
                 }
             }
+
+            var outputName = Path.GetFileNameWithoutExtension(inputPath);
+            var outputPath = Path.Combine(OutputDirectory, $"{outputName}.html");
+
+            Console.WriteLine($">> Writing {outputPath}");
+
+            var template = await GetTemplateAsync();
+
+            using (var writer = new StreamWriter(outputPath))
+            {
+                await writer.WriteAsync(string.Format(template, output));
+            }
         }
+
+        private async Task<string> GetTemplateAsync()
+        {
+            if (_template != null)
+            {
+                return _template;
+            }
+
+            using (var reader = new StreamReader(TemplatePath))
+            {
+                return _template = await reader.ReadToEndAsync();
+            }
+        }
+
+        private string _template;
     }
 }

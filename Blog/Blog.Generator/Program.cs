@@ -6,7 +6,7 @@ namespace Blog.Generator
     {
         public static async Task Main()
         {
-            await new BlogBuilder().GenerateArticles();
+            await new BlogBuilder().GenerateArticlesAsync();
         }
     }
 }

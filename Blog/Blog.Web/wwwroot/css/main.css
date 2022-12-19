@@ -1,0 +1,22 @@
+﻿div {
+    font-family: 'Exo 2', sans-serif;
+}
+
+a:link {
+    text-decoration: none;
+}
+
+a:visited {
+    text-decoration: none;
+    font-style: italic;
+}
+
+a:hover {
+    text-decoration: underline;
+    font-style: italic;
+}
+
+.blog-table-date {
+    font-weight: bold;
+    float: right;
+}

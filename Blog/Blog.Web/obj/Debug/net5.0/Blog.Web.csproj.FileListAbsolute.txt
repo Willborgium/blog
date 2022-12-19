@@ -18,6 +18,5 @@ c:\source\blog\Blog\Blog.Web\obj\Debug\net5.0\Blog.Web.dll
 c:\source\blog\Blog\Blog.Web\obj\Debug\net5.0\ref\Blog.Web.dll
 c:\source\blog\Blog\Blog.Web\obj\Debug\net5.0\Blog.Web.pdb
 c:\source\blog\Blog\Blog.Web\obj\Debug\net5.0\Blog.Web.genruntimeconfig.cache
-c:\source\blog\Blog\Blog.Web\bin\Debug\net5.0\Blog.Web.StaticWebAssets.xml
 c:\source\blog\Blog\Blog.Web\obj\Debug\net5.0\Blog.Web.csproj.AssemblyReference.cache
 c:\source\blog\Blog\Blog.Web\obj\Debug\net5.0\refint\Blog.Web.dll

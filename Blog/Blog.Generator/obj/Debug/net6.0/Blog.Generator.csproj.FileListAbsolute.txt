@@ -13,3 +13,4 @@ c:\source\blog\Blog\Blog.Generator\obj\Debug\net6.0\refint\Blog.Generator.dll
 c:\source\blog\Blog\Blog.Generator\obj\Debug\net6.0\Blog.Generator.pdb
 c:\source\blog\Blog\Blog.Generator\obj\Debug\net6.0\Blog.Generator.genruntimeconfig.cache
 c:\source\blog\Blog\Blog.Generator\obj\Debug\net6.0\ref\Blog.Generator.dll
+c:\source\blog\Blog\Blog.Generator\bin\Debug\net6.0\blog-post-template.html
