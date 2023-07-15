@@ -80,182 +80,181 @@
     }
 }</code></pre>
 <p class="text-justify">It puts me at ease knowing that updating the name of our property won’t cause any buggy UI issues. Now we can address the next issue: thread safety. More often than not I’ve run into a situation where some worker thread is trying to report progress to the UI and I naively forget how this class is implemented and write something simple like:</p>
-<p class="text-justify"> ///code#csharp</p>
-<p class="text-justify">public void SomeMethod()</p>
-<p class="text-justify">{</p>
-<p class="text-justify">    Task.Factory.StartNew(() =></p>
-<p class="text-justify">        {</p>
-<p class="text-justify">            // Doing some work...</p>
-<p class="text-justify">            Name = "Status update!";</p>
-<p class="text-justify">        });</p>
-<p class="text-justify">}</p>
-<pre><code class="language-///code">And boom! The world comes crashing down. WPF only allows updates to be made to the UI from the UI thread, which is the thread the application was started from. I often end up writing a bit of code like this to allow my UI updates to take place:</code></pre>
-<p class="text-justify">public void SomeMethod()</p>
-<p class="text-justify">{</p>
-<p class="text-justify">    var ui = Dispatcher.CurrentDispatcher;</p>
-<p class="text-justify"> </p>
-<p class="text-justify">    Task.Factory.StartNew(() =></p>
-<p class="text-justify">        {</p>
-<p class="text-justify">            // Doing some work...</p>
-<p class="text-justify">            ui.BeginInvoke(new Action(() =></p>
-<p class="text-justify">                {</p>
-<p class="text-justify">                    Name = "Status update!";</p>
-<p class="text-justify">                }));</p>
-<p class="text-justify">        });</p>
-<p class="text-justify">}</p>
-<pre><code class="language-///code">Although this solves the problem it introduces a lot of new code; we have effectively turned our string assignment into a method call, and a lambda. For me, that’s too cumbersome to have to deal with more than once. If we look at this code we can identify two key components. First we must get a hold of the UI thread. Second we must move our code over to the UI thread when we are not currently on it.
-A subtle note about the issue. The exception that is raised is not raised as a result of the assignment to our backer field. It is the propagation of this assignment to the UI via the call to the PropertyChanged event handler that causes this. As such, in our NotifyOnPropertyChanged class, we can control this behavior without having to know about what is actually being assigned.
-Let’s start by completing the first step. We need to add a field to hold the Dispatcher associated with the UI thread. The <a href="https://msdn.microsoft.com/en-us/library/system.windows.threading.dispatcher(v=vs.110).aspx">Dispatcher in WPF</a> is a class that is used for simplifying communication between threads. We then need to add a method that allows us to set the UI dispatcher. Here’s what I’ve come up with:</code></pre>
-<p class="text-justify">private static Dispatcher _ui;</p>
-<p class="text-justify"> </p>
-<p class="text-justify">public static void SetUI()</p>
-<p class="text-justify">{</p>
-<p class="text-justify">    if (_ui == null)</p>
-<p class="text-justify">    {</p>
-<p class="text-justify">        _ui = Dispatcher.CurrentDispatcher;</p>
-<p class="text-justify">    }</p>
-<p class="text-justify">    else</p>
-<p class="text-justify">    {</p>
-<p class="text-justify">        throw new Exception("Cannot set UI dispatcher more than once.");</p>
-<p class="text-justify">    }</p>
-<p class="text-justify">}</p>
-<pre><code class="language-///code">The way this is typically used is to call NotifyOnPropertyChanged.SetUI right after the InitializeComponent method has been called on your highest level control (typically your MainWindow). From this point on you don’t need to worry about it because every class will have it set; that’s the beauty of using static in this case.
-The second part of this is updating our OnPropertyChanged method to properly switch threads if need be. We must identify if we are not currently on the UI thread and then either switch threads or continue our execution.</code></pre>
-<p class="text-justify">public void OnPropertyChanged([CallerMemberName]string property = "")</p>
-<p class="text-justify">{</p>
-<p class="text-justify">    if (PropertyChanged != null)</p>
-<p class="text-justify">    {</p>
-<p class="text-justify">        if (Dispatcher.CurrentDispatcher == _ui)</p>
-<p class="text-justify">        {</p>
-<p class="text-justify">            PropertyChanged(this, new PropertyChangedEventArgs(property));</p>
-<p class="text-justify">        }</p>
-<p class="text-justify">        else</p>
-<p class="text-justify">        {</p>
-<p class="text-justify">            _ui.BeginInvoke(new Action(() => PropertyChanged(this, new PropertyChangedEventArgs(property))));</p>
-<p class="text-justify">        }</p>
-<p class="text-justify">    }</p>
-<p class="text-justify">}</p>
-<pre><code class="language-///code">Now our worker thread doesn’t have to do anything special. An assignment to our binding-ready property doesn’t care whether it’s made from the UI thread or not. We can simply revert our worker thread code back to the first example and move on. Much simpler!
-So now we get to the “optimizations” section of this article. Premature optimizations are a terrible idea. This section of code was only introduced when I actually ran into issues where so many UI updates were being made that there was a measurable tick in performance due to the number of new calls that were being made as a result of calling OnPropertyChanged. If you notice we don’t do anything special every time this is called. It’s simply passing the property name in to the event handler by wrapping it in a special class. If we make 1000 assignments to our Name property, we’re creating 1000 PropertyChangedEventArgs objects that are exactly the same. I don’t like that. What we could do is build a local cache that associates a PropertyChangedEventArgs with a string (the property name) and leverage that. This way we will only ever create a single instance.</code></pre>
-<p class="text-justify">public void OnPropertyChanged([CallerMemberName]string property = "")</p>
-<p class="text-justify">{</p>
-<p class="text-justify">    PropertyChangedEventArgs args = null;</p>
-<p class="text-justify"> </p>
-<p class="text-justify">    if (_args == null)</p>
-<p class="text-justify">    {</p>
-<p class="text-justify">        _args = new Dictionary<string, PropertyChangedEventArgs>();</p>
-<p class="text-justify">    }</p>
-<p class="text-justify"> </p>
-<p class="text-justify">    if (!_args.ContainsKey(property))</p>
-<p class="text-justify">    {</p>
-<p class="text-justify">        _args.Add(property, args = new PropertyChangedEventArgs(property));</p>
-<p class="text-justify">    }</p>
-<p class="text-justify">    else</p>
-<p class="text-justify">    {</p>
-<p class="text-justify">        args = _args[property];</p>
-<p class="text-justify">    }</p>
-<p class="text-justify"> </p>
-<p class="text-justify">    if (PropertyChanged != null)</p>
-<p class="text-justify">    {</p>
-<p class="text-justify">        if (Dispatcher.CurrentDispatcher == _ui)</p>
-<p class="text-justify">        {</p>
-<p class="text-justify">            PropertyChanged(this, args);</p>
-<p class="text-justify">        }</p>
-<p class="text-justify">        else</p>
-<p class="text-justify">        {</p>
-<p class="text-justify">            _ui.BeginInvoke(new Action(() => PropertyChanged(this, args)));</p>
-<p class="text-justify">        }</p>
-<p class="text-justify">    }</p>
-<p class="text-justify">}</p>
-<p class="text-justify"></p>
-<p class="text-justify">private IDictionary<string, PropertyChangedEventArgs> _args;</p>
-<pre><code class="language-///code">What we’ve done here is fairly straightforward. We added a dictionary that associates property names with the PropertyChangedEventArgs object that is generated by a call to OnPropertyChanged for that property. We then run a couple of conditions in our method to verify the cache is constructed and contains our item. We then use the item from the cache. It’s as simple as that! Now we’ve seriously reduced the memory footprint of this class.
-So what’s that bonus I was talking about at the beginning of the article? Let’s first take a look back at our property, then we can talk about a pattern.</code></pre>
-<p class="text-justify">private string _name;</p>
-<p class="text-justify"> </p>
-<p class="text-justify">public string Name</p>
-<p class="text-justify">{</p>
-<p class="text-justify">    get</p>
-<p class="text-justify">    {</p>
-<p class="text-justify">        return _name;</p>
-<p class="text-justify">    }</p>
-<p class="text-justify">    set</p>
-<p class="text-justify">    {</p>
-<p class="text-justify">        _name = value;</p>
-<p class="text-justify">        OnPropertyChanged();</p>
-<p class="text-justify">    }</p>
-<p class="text-justify">}</p>
-<pre><code class="language-///code">This is your standard, run of the mill WPF data-bindable property. I don’t like it, and neither should you. If your code uses properties like this and you don’t bat an eyelash then your application must be pretty light on it’s data-binding. There’s no guard around the call to OnPropertyChanged, meaning if I assign the same value to this property over and over and over, it’ll freeze my UI by propagating information that actually has no benefit for the user. A simple fix for this is to wrap the body of the setter in an if statement:</code></pre>
-<p class="text-justify">if (value != _name)</p>
-<p class="text-justify">{</p>
-<p class="text-justify">    _name = value;</p>
-<p class="text-justify">    OnPropertyChanged();</p>
-<p class="text-justify">}</p>
-<pre><code class="language-///code">Great, now we’re onto something. All of this may seem innocuous, as most code does in an article online. Out of context and only in a single use case, this seems like it isn’t that overwhelming. When I refactor code I like to take a look at the small wins and the big wins. Sometimes a worthwhile refactor is when you are able to greatly reduce the complexity of a 1000 line method down to a few hundred with comments and improved design. Other times it comes in the form of development speed, accuracy, and predictability. If we think about what we’re doing here, all we want is to add a property with a set and a get that can communicate with the UI. The methods I’m about to introduce reduce the amount of code required to achieve this same effect. An added benefit is that we will have unified all of our backer fields, allowing us to make incremental improvements or enhancements to our data retrieval techniques.</code></pre>
-<p class="text-justify">private IDictionary<string, object> _fields;</p>
-<p class="text-justify"> </p>
-<p class="text-justify">protected void SetField(object value, bool doNotify = true, [CallerMemberName] string property = "")</p>
-<p class="text-justify">{</p>
-<p class="text-justify">    if (_fields == null)</p>
-<p class="text-justify">    {</p>
-<p class="text-justify">        _fields = new Dictionary<string, object>();</p>
-<p class="text-justify">    }</p>
-<p class="text-justify"> </p>
-<p class="text-justify">    if (!_fields.ContainsKey(property))</p>
-<p class="text-justify">    {</p>
-<p class="text-justify">        _fields.Add(property, value);</p>
-<p class="text-justify">    }</p>
-<p class="text-justify">    else</p>
-<p class="text-justify">    {</p>
-<p class="text-justify">        _fields[property] = value;</p>
-<p class="text-justify">    }</p>
-<p class="text-justify"> </p>
-<p class="text-justify">    if (doNotify)</p>
-<p class="text-justify">    {</p>
-<p class="text-justify">        OnPropertyChanged(property);</p>
-<p class="text-justify">    }</p>
-<p class="text-justify">}</p>
-<pre><code class="language-///code">Using an approach similar to the cache we constructed for the PropertyChangedEventArgs, we’re storing the backer fields in a dictionary and associating them with the property name. This is safe because we leverage the language rule that no two properties in a class can have the same name; intrinsically unique. We add the additional doNotify property to allow consumers of this method to silently update values. Note that it is still entirely possible for the consumer to control when this property is updated by calling OnPropertyChanged themselves.
-Now for the getter. This one is also very straightforward but powerful.</code></pre>
-<p class="text-justify">protected T GetField<T>(T defaultValue, [CallerMemberName]string name = "")</p>
-<p class="text-justify">{</p>
-<p class="text-justify">    var output = defaultValue;</p>
-<p class="text-justify"> </p>
-<p class="text-justify">    if (_fields != null && _fields.ContainsKey(name))</p>
-<p class="text-justify">    {</p>
-<p class="text-justify">        var value = _fields[name];</p>
-<p class="text-justify"> </p>
-<p class="text-justify">        try</p>
-<p class="text-justify">        {</p>
-<p class="text-justify">            output = (T)value;</p>
-<p class="text-justify">        }</p>
-<p class="text-justify">        catch</p>
-<p class="text-justify">        {</p>
-<p class="text-justify">            Debug.WriteLine("Failed to convert field '{0}' of type '{1}' to type '{2}'.", name, value.GetType().Name, typeof(T).Name);</p>
-<p class="text-justify">        }</p>
-<p class="text-justify">    }</p>
-<p class="text-justify"> </p>
-<p class="text-justify">    return output;</p>
-<p class="text-justify">}</p>
-<pre><code class="language-///code">This method verifies that the requested property exists in the cache. If it doesn’t, it returns the user-specified default value. This might seem like overkill for the getter. Now I have to specify a default value when I call my getter? That doesn’t seem like it’s more user-friendly. Well a simple overload abstracts this functionality and gives you the freedom to express your intentions as succinctly or verbosely as you’d like.</code></pre>
-<p class="text-justify">protected T GetField<T>([CallerMemberName]string name = "")</p>
-<p class="text-justify">{</p>
-<p class="text-justify">    return GetField(default(T), name);</p>
-<p class="text-justify">}</p>
-<pre><code class="language-///code">This is the method that would typically be used in a getter. For reference types it will return null if there is no value in the cache. For value types, such as integers, it will return a default value (which for integers would be 0). This preserves the functionality that is offered by having manually-implemented backer fields. Let’s look at how sweet this syntax really is in action.</code></pre>
-<p class="text-justify">public string Name</p>
-<p class="text-justify">{</p>
-<p class="text-justify">    get</p>
-<p class="text-justify">    {</p>
-<p class="text-justify">        return GetField<string>();</p>
-<p class="text-justify">    }</p>
-<p class="text-justify">    set</p>
-<p class="text-justify">    {</p>
-<p class="text-justify">        SetField(value);</p>
-<p class="text-justify">    }</p>
-<p class="text-justify">}</p>
-<pre><code class="language-///code">It may not seem like much of a gain; honestly we’ve only trimmed a handful of lines of code off of this. From experience, though, I can say that this has saved me a tremendous amount of repetitious code writing that even things like code-snippets in Visual Studio or plain old copy and past couldn’t provide. This has now given us everything we’ve striven for. We now have a fast, thread safe, user friendly implementation of INotifyPropertyChanged that can be used across our WPF and WinRT view models and models. What more could you want?
-The full, final code for this article can be found <a href="http://pastebin.com/hfzsYvis">here</a>. Have a look, make changes, and hopefully it helps you in your quest to deliver quality software. If you have any questions or comments don’t hesitate to leave them here. Thanks again for reading!
+<pre><code class="language-csharp">public void SomeMethod()
+{
+    Task.Factory.StartNew(() =>
+        {
+            // Doing some work...
+            Name = "Status update!";
+        });
+}</code></pre>
+<p class="text-justify">And boom! The world comes crashing down. WPF only allows updates to be made to the UI from the UI thread, which is the thread the application was started from. I often end up writing a bit of code like this to allow my UI updates to take place:</p>
+<pre><code class="language-csharp">public void SomeMethod()
+{
+    var ui = Dispatcher.CurrentDispatcher;
+ 
+    Task.Factory.StartNew(() =>
+        {
+            // Doing some work...
+            ui.BeginInvoke(new Action(() =>
+                {
+                    Name = "Status update!";
+                }));
+        });
+}</code></pre>
+<p class="text-justify">Although this solves the problem it introduces a lot of new code; we have effectively turned our string assignment into a method call, and a lambda. For me, that’s too cumbersome to have to deal with more than once. If we look at this code we can identify two key components. First we must get a hold of the UI thread. Second we must move our code over to the UI thread when we are not currently on it.</p>
+<p class="text-justify">A subtle note about the issue. The exception that is raised is not raised as a result of the assignment to our backer field. It is the propagation of this assignment to the UI via the call to the PropertyChanged event handler that causes this. As such, in our NotifyOnPropertyChanged class, we can control this behavior without having to know about what is actually being assigned.</p>
+<p class="text-justify">Let’s start by completing the first step. We need to add a field to hold the Dispatcher associated with the UI thread. The <a href="https://msdn.microsoft.com/en-us/library/system.windows.threading.dispatcher(v=vs.110).aspx">Dispatcher in WPF</a> is a class that is used for simplifying communication between threads. We then need to add a method that allows us to set the UI dispatcher. Here’s what I’ve come up with:</p>
+<pre><code class="language-csharp">private static Dispatcher _ui;
+ 
+public static void SetUI()
+{
+    if (_ui == null)
+    {
+        _ui = Dispatcher.CurrentDispatcher;
+    }
+    else
+    {
+        throw new Exception("Cannot set UI dispatcher more than once.");
+    }
+}</code></pre>
+<p class="text-justify">The way this is typically used is to call NotifyOnPropertyChanged.SetUI right after the InitializeComponent method has been called on your highest level control (typically your MainWindow). From this point on you don’t need to worry about it because every class will have it set; that’s the beauty of using static in this case.</p>
+<p class="text-justify">The second part of this is updating our OnPropertyChanged method to properly switch threads if need be. We must identify if we are not currently on the UI thread and then either switch threads or continue our execution.</p>
+<pre><code class="language-csharp">public void OnPropertyChanged([CallerMemberName]string property = "")
+{
+    if (PropertyChanged != null)
+    {
+        if (Dispatcher.CurrentDispatcher == _ui)
+        {
+            PropertyChanged(this, new PropertyChangedEventArgs(property));
+        }
+        else
+        {
+            _ui.BeginInvoke(new Action(() => PropertyChanged(this, new PropertyChangedEventArgs(property))));
+        }
+    }
+}</code></pre>
+<p class="text-justify">Now our worker thread doesn’t have to do anything special. An assignment to our binding-ready property doesn’t care whether it’s made from the UI thread or not. We can simply revert our worker thread code back to the first example and move on. Much simpler!</p>
+<p class="text-justify">So now we get to the “optimizations” section of this article. Premature optimizations are a terrible idea. This section of code was only introduced when I actually ran into issues where so many UI updates were being made that there was a measurable tick in performance due to the number of new calls that were being made as a result of calling OnPropertyChanged. If you notice we don’t do anything special every time this is called. It’s simply passing the property name in to the event handler by wrapping it in a special class. If we make 1000 assignments to our Name property, we’re creating 1000 PropertyChangedEventArgs objects that are exactly the same. I don’t like that. What we could do is build a local cache that associates a PropertyChangedEventArgs with a string (the property name) and leverage that. This way we will only ever create a single instance.</p>
+<pre><code class="language-csharp">public void OnPropertyChanged([CallerMemberName]string property = "")
+{
+    PropertyChangedEventArgs args = null;
+ 
+    if (_args == null)
+    {
+        _args = new Dictionary<string, PropertyChangedEventArgs>();
+    }
+ 
+    if (!_args.ContainsKey(property))
+    {
+        _args.Add(property, args = new PropertyChangedEventArgs(property));
+    }
+    else
+    {
+        args = _args[property];
+    }
+ 
+    if (PropertyChanged != null)
+    {
+        if (Dispatcher.CurrentDispatcher == _ui)
+        {
+            PropertyChanged(this, args);
+        }
+        else
+        {
+            _ui.BeginInvoke(new Action(() => PropertyChanged(this, args)));
+        }
+    }
+}
+
+private IDictionary<string, PropertyChangedEventArgs> _args;</code></pre>
+<p class="text-justify">What we’ve done here is fairly straightforward. We added a dictionary that associates property names with the PropertyChangedEventArgs object that is generated by a call to OnPropertyChanged for that property. We then run a couple of conditions in our method to verify the cache is constructed and contains our item. We then use the item from the cache. It’s as simple as that! Now we’ve seriously reduced the memory footprint of this class.</p>
+<p class="text-justify">So what’s that bonus I was talking about at the beginning of the article? Let’s first take a look back at our property, then we can talk about a pattern.</p>
+<pre><code class="language-csharp">private string _name;
+ 
+public string Name
+{
+    get
+    {
+        return _name;
+    }
+    set
+    {
+        _name = value;
+        OnPropertyChanged();
+    }
+}</code></pre>
+<p class="text-justify">This is your standard, run of the mill WPF data-bindable property. I don’t like it, and neither should you. If your code uses properties like this and you don’t bat an eyelash then your application must be pretty light on it’s data-binding. There’s no guard around the call to OnPropertyChanged, meaning if I assign the same value to this property over and over and over, it’ll freeze my UI by propagating information that actually has no benefit for the user. A simple fix for this is to wrap the body of the setter in an if statement:</p>
+<pre><code class="language-csharp">if (value != _name)
+{
+    _name = value;
+    OnPropertyChanged();
+}</code></pre>
+<p class="text-justify">Great, now we’re onto something. All of this may seem innocuous, as most code does in an article online. Out of context and only in a single use case, this seems like it isn’t that overwhelming. When I refactor code I like to take a look at the small wins and the big wins. Sometimes a worthwhile refactor is when you are able to greatly reduce the complexity of a 1000 line method down to a few hundred with comments and improved design. Other times it comes in the form of development speed, accuracy, and predictability. If we think about what we’re doing here, all we want is to add a property with a set and a get that can communicate with the UI. The methods I’m about to introduce reduce the amount of code required to achieve this same effect. An added benefit is that we will have unified all of our backer fields, allowing us to make incremental improvements or enhancements to our data retrieval techniques.</p>
+<pre><code class="language-csharp">private IDictionary<string, object> _fields;
+ 
+protected void SetField(object value, bool doNotify = true, [CallerMemberName] string property = "")
+{
+    if (_fields == null)
+    {
+        _fields = new Dictionary<string, object>();
+    }
+ 
+    if (!_fields.ContainsKey(property))
+    {
+        _fields.Add(property, value);
+    }
+    else
+    {
+        _fields[property] = value;
+    }
+ 
+    if (doNotify)
+    {
+        OnPropertyChanged(property);
+    }
+}</code></pre>
+<p class="text-justify">Using an approach similar to the cache we constructed for the PropertyChangedEventArgs, we’re storing the backer fields in a dictionary and associating them with the property name. This is safe because we leverage the language rule that no two properties in a class can have the same name; intrinsically unique. We add the additional doNotify property to allow consumers of this method to silently update values. Note that it is still entirely possible for the consumer to control when this property is updated by calling OnPropertyChanged themselves.</p>
+<p class="text-justify">Now for the getter. This one is also very straightforward but powerful.</p>
+<pre><code class="language-csharp">protected T GetField<T>(T defaultValue, [CallerMemberName]string name = "")
+{
+    var output = defaultValue;
+ 
+    if (_fields != null && _fields.ContainsKey(name))
+    {
+        var value = _fields[name];
+ 
+        try
+        {
+            output = (T)value;
+        }
+        catch
+        {
+            Debug.WriteLine("Failed to convert field '{0}' of type '{1}' to type '{2}'.", name, value.GetType().Name, typeof(T).Name);
+        }
+    }
+ 
+    return output;
+}</code></pre>
+<p class="text-justify">This method verifies that the requested property exists in the cache. If it doesn’t, it returns the user-specified default value. This might seem like overkill for the getter. Now I have to specify a default value when I call my getter? That doesn’t seem like it’s more user-friendly. Well a simple overload abstracts this functionality and gives you the freedom to express your intentions as succinctly or verbosely as you’d like.</p>
+<pre><code class="language-csharp">protected T GetField<T>([CallerMemberName]string name = "")
+{
+    return GetField(default(T), name);
+}</code></pre>
+<p class="text-justify">This is the method that would typically be used in a getter. For reference types it will return null if there is no value in the cache. For value types, such as integers, it will return a default value (which for integers would be 0). This preserves the functionality that is offered by having manually-implemented backer fields. Let’s look at how sweet this syntax really is in action.</p>
+<pre><code class="language-csharp">public string Name
+{
+    get
+    {
+        return GetField<string>();
+    }
+    set
+    {
+        SetField(value);
+    }
+}</code></pre>
+<p class="text-justify">It may not seem like much of a gain; honestly we’ve only trimmed a handful of lines of code off of this. From experience, though, I can say that this has saved me a tremendous amount of repetitious code writing that even things like code-snippets in Visual Studio or plain old copy and past couldn’t provide. This has now given us everything we’ve striven for. We now have a fast, thread safe, user friendly implementation of INotifyPropertyChanged that can be used across our WPF and WinRT view models and models. What more could you want?</p>
+<p class="text-justify">The full, final code for this article can be found <a href="http://pastebin.com/hfzsYvis">here</a>. Have a look, make changes, and hopefully it helps you in your quest to deliver quality software. If you have any questions or comments don’t hesitate to leave them here. Thanks again for reading!</p>
 
     </div>
     <script src="https://cdn.jsdelivr.net/npm/prismjs@1.23.0/prism.min.js"></script>

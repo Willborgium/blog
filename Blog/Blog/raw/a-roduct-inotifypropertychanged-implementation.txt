@@ -67,7 +67,7 @@ public class PretendViewModel : NotifyOnPropertyChanged
 }
 ///code
 It puts me at ease knowing that updating the name of our property won’t cause any buggy UI issues. Now we can address the next issue: thread safety. More often than not I’ve run into a situation where some worker thread is trying to report progress to the UI and I naively forget how this class is implemented and write something simple like:
- ///code#csharp
+////code#csharp
 public void SomeMethod()
 {
     Task.Factory.StartNew(() =>

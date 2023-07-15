@@ -82,7 +82,7 @@ namespace Blog.Generator
                     output.AppendLine($"<p class=\"font-weight-light font-italic\">{line}</p>");
                     hasDate = true;
                 }
-                else if (line.StartsWith("///code"))
+                else if (line.Trim().StartsWith("///code"))
                 {
                     if (isInCodeBlock)
                     {
