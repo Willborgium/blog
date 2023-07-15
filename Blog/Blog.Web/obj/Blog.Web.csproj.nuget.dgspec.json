@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "c:\\source\\blog\\Blog\\Blog.Web\\Blog.Web.csproj": {}
+    "C:\\source\\blog\\Blog\\Blog.Web\\Blog.Web.csproj": {}
   },
   "projects": {
-    "c:\\source\\blog\\Blog\\Blog.Web\\Blog.Web.csproj": {
+    "C:\\source\\blog\\Blog\\Blog.Web\\Blog.Web.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "c:\\source\\blog\\Blog\\Blog.Web\\Blog.Web.csproj",
+        "projectUniqueName": "C:\\source\\blog\\Blog\\Blog.Web\\Blog.Web.csproj",
         "projectName": "Blog.Web",
-        "projectPath": "c:\\source\\blog\\Blog\\Blog.Web\\Blog.Web.csproj",
+        "projectPath": "C:\\source\\blog\\Blog\\Blog.Web\\Blog.Web.csproj",
         "packagesPath": "C:\\Users\\wjcus\\.nuget\\packages\\",
-        "outputPath": "c:\\source\\blog\\Blog\\Blog.Web\\obj\\",
+        "outputPath": "C:\\source\\blog\\Blog\\Blog.Web\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -27,6 +27,7 @@
         "sources": {
           "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
           "C:\\Program Files\\dotnet\\library-packs": {},
+          "C:\\Program Files\\dotnet\\sdk\\7.0.304\\Sdks\\Microsoft.NET.Sdk.Web\\library-packs": {},
           "https://api.nuget.org/v3/index.json": {},
           "https://black-plain-games-nuget.azurewebsites.net:443/nuget": {}
         },
@@ -51,7 +52,8 @@
             "net47",
             "net471",
             "net472",
-            "net48"
+            "net48",
+            "net481"
           ],
           "assetTargetFallback": true,
           "warn": true,
@@ -81,7 +83,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\6.0.300\\RuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\7.0.304\\RuntimeIdentifierGraph.json"
         }
       }
     }
