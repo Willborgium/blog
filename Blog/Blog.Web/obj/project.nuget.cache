@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "pS+MeBzPWc8GDevnbalVHIDsMQBpvAnKkCsnyPkg3fc5knhL9FHqOUsO5FLGwGmHCj2uw0pzMHCF7VCf52ulQQ==",
+  "dgSpecHash": "6hZt7nFdy7fA/0llkWERKGe4hOpWUsC5jU5tmSIPXeV+IMFRwLQm49aNdIxxaNSqAwlX6DX2MAWtJtPDy3A86A==",
   "success": true,
-  "projectFilePath": "C:\\source\\blog\\Blog\\Blog.Web\\Blog.Web.csproj",
+  "projectFilePath": "c:\\source\\blog\\Blog\\Blog.Web\\Blog.Web.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\wjcus\\.nuget\\packages\\microsoft.windowsdesktop.app.ref\\5.0.0\\microsoft.windowsdesktop.app.ref.5.0.0.nupkg.sha512",
     "C:\\Users\\wjcus\\.nuget\\packages\\microsoft.netcore.app.ref\\5.0.0\\microsoft.netcore.app.ref.5.0.0.nupkg.sha512",

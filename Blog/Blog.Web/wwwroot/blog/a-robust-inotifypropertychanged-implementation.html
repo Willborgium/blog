@@ -54,13 +54,13 @@
         set
         {
             _name = value;
-            OnPropertyChanged("name");
+            OnPropertyChanged(&quot;name&quot;);
             // In C# 6.0: OnPropertyChanged(nameof(name));
         }
     }
 }</code></pre>
 <p class="text-justify">This is a very simple view-model with a single property (Name) that is now eligible for proper data binding thanks to our handy implementation of INotifyPropertyChanged. What I don’t like is how easy it would be to make a mistake with the string you’re passing in to OnPropertyChanged (or how easy it would be to let this go out of sync in the event that the property name changes). C# 6.0 solved this by introducing the <a href="https://msdn.microsoft.com/en-us/magazine/dn802602.aspx">nameof operator</a>, which I believe was solely introduced for this purpose but that’s beside the point. Regardless, such a crucial base class should not rely on the most cutting edge language features. Given that, if we modify our method signature by adding the <a href="https://msdn.microsoft.com/en-us/library/system.runtime.compilerservices.callermembernameattribute(v=vs.110).aspx">[CallerMemberName]</a> attribute to the property parameter we resolve this issue completely (note that this attribute was introduced in .NET 4.5). The update signature looks as follows.</p>
-<pre><code class="language-csharp">public void OnPropertyChanged([CallerMemberName]string property = "")</code></pre>
+<pre><code class="language-csharp">public void OnPropertyChanged([CallerMemberName]string property = &quot;&quot;)</code></pre>
 <p class="text-justify">Properties decorated with the CallerMemberName attribute must have a default value. Now our updated view-model property looks like this:</p>
 <pre><code class="language-csharp">public class PretendViewModel : NotifyOnPropertyChanged
 {
@@ -82,10 +82,10 @@
 <p class="text-justify">It puts me at ease knowing that updating the name of our property won’t cause any buggy UI issues. Now we can address the next issue: thread safety. More often than not I’ve run into a situation where some worker thread is trying to report progress to the UI and I naively forget how this class is implemented and write something simple like:</p>
 <pre><code class="language-csharp">public void SomeMethod()
 {
-    Task.Factory.StartNew(() =>
+    Task.Factory.StartNew(() =&gt;
         {
             // Doing some work...
-            Name = "Status update!";
+            Name = &quot;Status update!&quot;;
         });
 }</code></pre>
 <p class="text-justify">And boom! The world comes crashing down. WPF only allows updates to be made to the UI from the UI thread, which is the thread the application was started from. I often end up writing a bit of code like this to allow my UI updates to take place:</p>
@@ -93,12 +93,12 @@
 {
     var ui = Dispatcher.CurrentDispatcher;
  
-    Task.Factory.StartNew(() =>
+    Task.Factory.StartNew(() =&gt;
         {
             // Doing some work...
-            ui.BeginInvoke(new Action(() =>
+            ui.BeginInvoke(new Action(() =&gt;
                 {
-                    Name = "Status update!";
+                    Name = &quot;Status update!&quot;;
                 }));
         });
 }</code></pre>
@@ -115,12 +115,12 @@ public static void SetUI()
     }
     else
     {
-        throw new Exception("Cannot set UI dispatcher more than once.");
+        throw new Exception(&quot;Cannot set UI dispatcher more than once.&quot;);
     }
 }</code></pre>
 <p class="text-justify">The way this is typically used is to call NotifyOnPropertyChanged.SetUI right after the InitializeComponent method has been called on your highest level control (typically your MainWindow). From this point on you don’t need to worry about it because every class will have it set; that’s the beauty of using static in this case.</p>
 <p class="text-justify">The second part of this is updating our OnPropertyChanged method to properly switch threads if need be. We must identify if we are not currently on the UI thread and then either switch threads or continue our execution.</p>
-<pre><code class="language-csharp">public void OnPropertyChanged([CallerMemberName]string property = "")
+<pre><code class="language-csharp">public void OnPropertyChanged([CallerMemberName]string property = &quot;&quot;)
 {
     if (PropertyChanged != null)
     {
@@ -130,19 +130,19 @@ public static void SetUI()
         }
         else
         {
-            _ui.BeginInvoke(new Action(() => PropertyChanged(this, new PropertyChangedEventArgs(property))));
+            _ui.BeginInvoke(new Action(() =&gt; PropertyChanged(this, new PropertyChangedEventArgs(property))));
         }
     }
 }</code></pre>
 <p class="text-justify">Now our worker thread doesn’t have to do anything special. An assignment to our binding-ready property doesn’t care whether it’s made from the UI thread or not. We can simply revert our worker thread code back to the first example and move on. Much simpler!</p>
 <p class="text-justify">So now we get to the “optimizations” section of this article. Premature optimizations are a terrible idea. This section of code was only introduced when I actually ran into issues where so many UI updates were being made that there was a measurable tick in performance due to the number of new calls that were being made as a result of calling OnPropertyChanged. If you notice we don’t do anything special every time this is called. It’s simply passing the property name in to the event handler by wrapping it in a special class. If we make 1000 assignments to our Name property, we’re creating 1000 PropertyChangedEventArgs objects that are exactly the same. I don’t like that. What we could do is build a local cache that associates a PropertyChangedEventArgs with a string (the property name) and leverage that. This way we will only ever create a single instance.</p>
-<pre><code class="language-csharp">public void OnPropertyChanged([CallerMemberName]string property = "")
+<pre><code class="language-csharp">public void OnPropertyChanged([CallerMemberName]string property = &quot;&quot;)
 {
     PropertyChangedEventArgs args = null;
  
     if (_args == null)
     {
-        _args = new Dictionary<string, PropertyChangedEventArgs>();
+        _args = new Dictionary&lt;string, PropertyChangedEventArgs&gt;();
     }
  
     if (!_args.ContainsKey(property))
@@ -162,12 +162,12 @@ public static void SetUI()
         }
         else
         {
-            _ui.BeginInvoke(new Action(() => PropertyChanged(this, args)));
+            _ui.BeginInvoke(new Action(() =&gt; PropertyChanged(this, args)));
         }
     }
 }
 
-private IDictionary<string, PropertyChangedEventArgs> _args;</code></pre>
+private IDictionary&lt;string, PropertyChangedEventArgs&gt; _args;</code></pre>
 <p class="text-justify">What we’ve done here is fairly straightforward. We added a dictionary that associates property names with the PropertyChangedEventArgs object that is generated by a call to OnPropertyChanged for that property. We then run a couple of conditions in our method to verify the cache is constructed and contains our item. We then use the item from the cache. It’s as simple as that! Now we’ve seriously reduced the memory footprint of this class.</p>
 <p class="text-justify">So what’s that bonus I was talking about at the beginning of the article? Let’s first take a look back at our property, then we can talk about a pattern.</p>
 <pre><code class="language-csharp">private string _name;
@@ -191,13 +191,13 @@ public string Name
     OnPropertyChanged();
 }</code></pre>
 <p class="text-justify">Great, now we’re onto something. All of this may seem innocuous, as most code does in an article online. Out of context and only in a single use case, this seems like it isn’t that overwhelming. When I refactor code I like to take a look at the small wins and the big wins. Sometimes a worthwhile refactor is when you are able to greatly reduce the complexity of a 1000 line method down to a few hundred with comments and improved design. Other times it comes in the form of development speed, accuracy, and predictability. If we think about what we’re doing here, all we want is to add a property with a set and a get that can communicate with the UI. The methods I’m about to introduce reduce the amount of code required to achieve this same effect. An added benefit is that we will have unified all of our backer fields, allowing us to make incremental improvements or enhancements to our data retrieval techniques.</p>
-<pre><code class="language-csharp">private IDictionary<string, object> _fields;
+<pre><code class="language-csharp">private IDictionary&lt;string, object&gt; _fields;
  
-protected void SetField(object value, bool doNotify = true, [CallerMemberName] string property = "")
+protected void SetField(object value, bool doNotify = true, [CallerMemberName] string property = &quot;&quot;)
 {
     if (_fields == null)
     {
-        _fields = new Dictionary<string, object>();
+        _fields = new Dictionary&lt;string, object&gt;();
     }
  
     if (!_fields.ContainsKey(property))
@@ -216,7 +216,7 @@ protected void SetField(object value, bool doNotify = true, [CallerMemberName] s
 }</code></pre>
 <p class="text-justify">Using an approach similar to the cache we constructed for the PropertyChangedEventArgs, we’re storing the backer fields in a dictionary and associating them with the property name. This is safe because we leverage the language rule that no two properties in a class can have the same name; intrinsically unique. We add the additional doNotify property to allow consumers of this method to silently update values. Note that it is still entirely possible for the consumer to control when this property is updated by calling OnPropertyChanged themselves.</p>
 <p class="text-justify">Now for the getter. This one is also very straightforward but powerful.</p>
-<pre><code class="language-csharp">protected T GetField<T>(T defaultValue, [CallerMemberName]string name = "")
+<pre><code class="language-csharp">protected T GetField&lt;T&gt;(T defaultValue, [CallerMemberName]string name = &quot;&quot;)
 {
     var output = defaultValue;
  
@@ -230,14 +230,14 @@ protected void SetField(object value, bool doNotify = true, [CallerMemberName] s
         }
         catch
         {
-            Debug.WriteLine("Failed to convert field '{0}' of type '{1}' to type '{2}'.", name, value.GetType().Name, typeof(T).Name);
+            Debug.WriteLine(&quot;Failed to convert field '{0}' of type '{1}' to type '{2}'.&quot;, name, value.GetType().Name, typeof(T).Name);
         }
     }
  
     return output;
 }</code></pre>
 <p class="text-justify">This method verifies that the requested property exists in the cache. If it doesn’t, it returns the user-specified default value. This might seem like overkill for the getter. Now I have to specify a default value when I call my getter? That doesn’t seem like it’s more user-friendly. Well a simple overload abstracts this functionality and gives you the freedom to express your intentions as succinctly or verbosely as you’d like.</p>
-<pre><code class="language-csharp">protected T GetField<T>([CallerMemberName]string name = "")
+<pre><code class="language-csharp">protected T GetField&lt;T&gt;([CallerMemberName]string name = &quot;&quot;)
 {
     return GetField(default(T), name);
 }</code></pre>
@@ -246,7 +246,7 @@ protected void SetField(object value, bool doNotify = true, [CallerMemberName] s
 {
     get
     {
-        return GetField<string>();
+        return GetField&lt;string&gt;();
     }
     set
     {

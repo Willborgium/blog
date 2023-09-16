@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\source\\blog\\Blog\\Blog.Generator\\Blog.Generator.csproj": {}
+    "c:\\source\\blog\\Blog\\Blog.Generator\\Blog.Generator.csproj": {}
   },
   "projects": {
-    "C:\\source\\blog\\Blog\\Blog.Generator\\Blog.Generator.csproj": {
+    "c:\\source\\blog\\Blog\\Blog.Generator\\Blog.Generator.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\source\\blog\\Blog\\Blog.Generator\\Blog.Generator.csproj",
+        "projectUniqueName": "c:\\source\\blog\\Blog\\Blog.Generator\\Blog.Generator.csproj",
         "projectName": "Blog.Generator",
-        "projectPath": "C:\\source\\blog\\Blog\\Blog.Generator\\Blog.Generator.csproj",
+        "projectPath": "c:\\source\\blog\\Blog\\Blog.Generator\\Blog.Generator.csproj",
         "packagesPath": "C:\\Users\\wjcus\\.nuget\\packages\\",
-        "outputPath": "C:\\source\\blog\\Blog\\Blog.Generator\\obj\\",
+        "outputPath": "c:\\source\\blog\\Blog\\Blog.Generator\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"

@@ -33,7 +33,7 @@
 {
     public LoggingService()
     {
-        _notifications = new List<string>();
+        _notifications = new List&lt;string&gt;();
     }
  
     public void Notify(string message)
@@ -41,7 +41,7 @@
         _notifications.Add(message);
     }
  
-    private List<string> _notifications;
+    private List&lt;string&gt; _notifications;
 }</code></pre>
 <p class="text-justify">Okay, great! We can knock the first problem off the list; we now actually have a logging system. But it sucks, so we need to expand upon this. Right now, all we can do is say something and this system holds on to it. Now I’m going to lay down a couple of typical things I want my logging system to be able to track (in plain English):</p>
 <pre><code class="language-csharp">Noise: Some business logic step occurred.
@@ -63,7 +63,7 @@ Exception: Object reference not set to an instance of type Object.</code></pre>
 <p class="text-justify">We must now extend our implementation to support this. If we modify the Notify method to accept this additional piece of information, we should be good.</p>
 <pre><code class="language-csharp">public void Notify(NotificationLevel level, string message)
 {
-    _notifications.Add(string.Format("{0}: {1}", level, message));
+    _notifications.Add(string.Format(&quot;{0}: {1}&quot;, level, message));
 }</code></pre>
 <p class="text-justify">This is better and the messages it produces mirror those that I’ve written out above. Before we continue I’d like to identify a foreseeable problem with this system. If we continue to add arguments to this method, we’re doing some custom baked in logic to crush all of that useful information provided to us into a string. If we created a class that contained all of this information, it would certainly be more malleable when necessary. Imagine trying to look at these strings and determine which ones are noise and which are exceptions (programmatically, that is). It would be a waste of clock cycles when you could just create a class to contain this information. So we’re going to make an adjustment to our class as a whole and continue from this point. Now our code looks a little like this:</p>
 <pre><code class="language-csharp">public class Notification
@@ -81,7 +81,7 @@ Exception: Object reference not set to an instance of type Object.</code></pre>
  
     public override string ToString()
     {
-        return string.Format("{0}: {1}", Level, Message);
+        return string.Format(&quot;{0}: {1}&quot;, Level, Message);
     }
 }
   
@@ -89,7 +89,7 @@ public class LoggingService
 {
     public LoggingService()
     {
-        _notifications = new List<Notification>();
+        _notifications = new List&lt;Notification&gt;();
     }
  
     public void Notify(NotificationLevel level, string message)
@@ -97,7 +97,7 @@ public class LoggingService
         _notifications.Add(new Notification(level, message));
     }
  
-    private List<Notification> _notifications;
+    private List&lt;Notification&gt; _notifications;
 }</code></pre>
 <p class="text-justify">Now we have some structure to this. Notice that the logic that formats this has been moved to the Notification class’s ToString override? This makes a lot more sense because it is specifically related to how the Notification looks when it is a string, not “What the logging system thinks it should look like as a string”.</p>
 <p class="text-justify">Things are looking better, but we’re still missing some key features from an API usability standpoint. Sometimes messages provided are static, but some are dynamic. We can definitely expand our method to be able to do the string formatting internally for the user.</p>
@@ -109,11 +109,11 @@ public class LoggingService
 <ul>
 <li>Noise: Some business logic step occurred.</li>
 </ul>
-<pre><code class="language-csharp">system.Notify(NotificationLevel.Noise, "Some business logic step occurred.");</code></pre>
+<pre><code class="language-csharp">system.Notify(NotificationLevel.Noise, &quot;Some business logic step occurred.&quot;);</code></pre>
 <ul>
 <li>Warning: Parameter ‘accountId’ is null.</li>
 </ul>
-<pre><code class="language-csharp">system.Notify(NotificationLevel.Warning, "Parameter '{0}' is null.", nameof(accountId));</code></pre>
+<pre><code class="language-csharp">system.Notify(NotificationLevel.Warning, &quot;Parameter '{0}' is null.&quot;, nameof(accountId));</code></pre>
 <ul>
 <li>Exception: Object reference not set to an instance of type Object.</li>
 </ul>
@@ -155,7 +155,7 @@ public class LoggingService
  
     public override string ToString()
     {
-        return string.Format("{0}: {1}", Level, Message);
+        return string.Format(&quot;{0}: {1}&quot;, Level, Message);
     }
 }</code></pre>
 <p class="text-justify">A note about StackTrace: it is very slow. In production code you would only want to keep the stack trace in case of an exception. But for this example we will catch it for everything. We now have all of the information necessary for verbose, useful, categorical logging. With one of these Notifications we can quickly identify when and where something happened, what happened, and how serious it was. But with all this extra data, there are a couple of additional methods we want to add to our service to make it very user friendly. First, let’s make it really easy to add message that is just noise.</p>
@@ -190,9 +190,9 @@ public class LoggingService
 {
     public LoggingService()
     {
-         _notifications = new List<Notification>();
+         _notifications = new List&lt;Notification&gt;();
  
-         _subscribers = new List<INotificationSubscriber>();
+         _subscribers = new List&lt;INotificationSubscriber&gt;();
     }
  
     // Notify methods removed for clarity
@@ -207,9 +207,9 @@ public class LoggingService
         _subscribers.Remove(subscriber);
     }
   
-    private List<INotificationSubscriber> _subscribers;
+    private List&lt;INotificationSubscriber&gt; _subscribers;
  
-    private List<Notification> _notifications;
+    private List&lt;Notification&gt; _notifications;
 }</code></pre>
 <p class="text-justify">Now that subscribers can be added and removed, we’re ready to actually notify them. We can encapsulate this in a method and use it in our Notify methods.</p>
 <pre><code class="language-csharp">protected void NotifySubscribers(Notification notification)

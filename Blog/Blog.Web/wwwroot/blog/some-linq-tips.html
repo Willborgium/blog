@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>William Custode - Blog</title>
+    <link rel="stylesheet"
+          href="https://fonts.googleapis.com/css?family=Exo%202">
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/css/bootstrap.min.css"
+          integrity="sha384-eOJMYsd53ii+scO/bJGFsiCZc+5NDVN2yr8+0RDqr0Ql0h+rP48ckxlpbzKgwra6"
+          crossorigin="anonymous">
+    <link rel="stylesheet"
+          href="../css/main.css" />
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/prismjs@1.23.0/themes/prism-okaidia.css">
+</head>
+<body>
+    <div class="container">
+        <h2>Some Linq Tips</h2>
+<p class="font-weight-light font-italic">2015-09-13</p>
+<p class="text-justify">Since its introduction alongside Visual Studio 2008, <a href="https://learn.microsoft.com/en-us/dotnet/csharp/linq/?redirectedfrom=MSDN">Linq</a> has made many common programming efforts a breeze. As it has developed, Linq has become a powerful tool for interacting with SQL, Xml, and many other datasources. Developers that are familiar with the structures commonly found in a query language will feel at home using Linq in their code, and those who are less query-savvy will learn to appreciate the features that are introduced with Linq. </p>
+<p class="text-justify">The purpose of this article, however, is to talk about Linq beyond the 101-level course. Linq is incredibly convenient and also introduces a few other programming concepts that can be applied elsewhere. This article will talk about some less well known extensions as well as the programming mechanisms used to take advantage of them. Here are a few of the things I'd like to cover: </p>
+<p class="text-justify"></p>
+<ul>
+<li>Count, Any, and All</li>
+<li>SelectMany</li>
+<li>Single/SingleOrDefault</li>
+<li>Zip</li>
+</ul>
+<p class="text-justify"></p>
+<p class="text-justify"><h1>Basic Setup</h1></p>
+<p class="text-justify">Throughout this article I'll be using the following two classes for illustrative purposes:</p>
+<pre><code class="language-csharp">public class Person
+{
+    public int Id { get; set; }
+    public string FirstName { get; set; }
+    public string LastName { get; set; }
+    public int Age { get; set; }
+    public IEnumerable&lt;Address&gt; Addresses { get; set; }
+}
+
+public class Address
+{
+    public int Id { get; set; }
+    public int HouseNumber { get; set; }
+    public string Street { get; set; }
+    public string City { get; set; }
+    public string State { get; set; }
+    public string ZipCode { get; set; }
+}</code></pre>
+<p class="text-justify">I'll also be using the following object for querying against:</p>
+<pre><code class="language-csharp">IEnumerable&lt;Person&gt; people = new List&lt;Person&gt;();</code></pre>
+<p class="text-justify"></p>
+<p class="text-justify"><h1>Count, Any, and All</h1></p>
+<p class="text-justify"><a href="https://learn.microsoft.com/en-us/dotnet/api/system.linq.enumerable.count">Count</a> is a function that many of us rely on for our processing logic. I most commonly see it used as follows:</p>
+<pre><code class="language-csharp">if(people.Count() &gt; 0)
+{
+	...
+}</code></pre>
+<p class="text-justify">I think this kind of logic is naturally how programmers internalize the statement, "If the collection is not empty." Linq has introduced the Any function to remedy this and allow you to remove one more "magic static" from your code. As its name implies, <a href="https://learn.microsoft.com/en-us/dotnet/api/system.linq.enumerable.any">Any</a> returns a flag indictating whether the collection contains at least one element. The above statement can then be reduced to the following (much more clear) statement:</p>
+<pre><code class="language-csharp">if(people.Any())
+{
+	...
+}</code></pre>
+<p class="text-justify">That's great, but a lot of programmers will leave it at that, simply dismissing Any as being a trivial replacement for "Count > 0". This simply isn't true. As with just about every Linq extension, Any has an overload that takes in a predicate that allows you to verify that at least one item in the collection matches that condition. Take a look at this example:</p>
+<pre><code class="language-csharp">if(people.Any(p =&gt; p.FirstName == &quot;Will&quot;))
+{
+	// I'm not alone!
+}</code></pre>
+<p class="text-justify">This can be very helpful if you're trying to verify that at least one item in a collection matches a certain condition. Consider what the non-Linq version of this would look like:</p>
+<pre><code class="language-csharp">bool amINotAlone = false;
+
+foreach(var person in people)
+{
+	if(person.FirstName == &quot;Will&quot;)
+	{
+		amINotAlone = true;
+		break;
+	}
+}
+
+if(amINotAlone)
+{
+	// I'm not alone!
+}</code></pre>
+<p class="text-justify">Linq is all about reducing the effort required to accomplish typical programming tasks and the Any extension is no exception. Additionally, the same kind of approach can be applied to Count. This is something I see commonly overlooked, and I think it's because it's just another one of those things that programmers are so used to writing out by hand that they simply never wonder if there's a better way.</p>
+<pre><code class="language-csharp">Console.WriteLine(&quot;There are {0} kids.&quot;, people.Count(p =&gt; p.Age &lt; 18));</code></pre>
+<p class="text-justify">Thinking back to what Any was good for, the corollary for Any is <a href="https://learn.microsoft.com/en-us/dotnet/api/system.linq.enumerable.all">All</a>. As you can imagine, All verifies that every item in the collection matches the specified condition. Suppose we were holding a party where adults-only beverages were being sold. A simple way to know when we can start handing out the beverages is to know when all of the underage attendees are gone.</p>
+<pre><code class="language-csharp">if(people.All(p =&gt; p.Age &gt; 21))
+{
+	// Hand out the drinks
+}</code></pre>
+<p class="text-justify">One of my favorite tricks, often used in testing code or validation code, is using Linq to validate two collections against each other. For simplicity, let's assume a fair validation of a person is checking that their name matches. Let's say we have another collection of people that we need to validate against our authoritative list of people. Linq makes quick work of this:</p>
+<pre><code class="language-csharp">var listToValidate = new List&lt;Person&gt;();
+
+var hasAllPeople = people.All(p =&gt; listToValidate.Any(v =&gt; v.FirstName == p.FirstName));</code></pre>
+<p class="text-justify">Unwinding this logic, we're verifying that at least one person in the listToValidate collection has the same first name as a person in the people collection, for every person in the people collection. This, in theory, performs a comprehensive cross-validation of the second collection, and in one line of code!</p>
+<p class="text-justify">The last note I'd like to make about Count() is that the extension method is different than the Count property. Depending on how you are accessing your collection (via the IEnumerable, IList, ICollection interface, etc) you may have one or both of them available. Whenever possible, you should use the Count property to retrieve the simple count of elements in the collection because the property is typically a stored value and not calculated, whereas the Count() extension method requires an iteration of the collection to surmise the value.</p>
+<p class="text-justify"><h1>SelectMany</h1></p>
+<p class="text-justify"><a href="https://learn.microsoft.com/en-us/dotnet/api/system.linq.enumerable.selectmany">SelectMany</a> is an extension I came across when working with some complex data structures that I had a particular use case for (I can't exactly remember what it was but I have concocted a fairly trivial yet familiar example for demonstration purposes). In this example, suppose we want a list of everyone's addresses. We don't really care who is at the address (in this case) but we'd like the addresses to be in a simple enumerable structure. For situations like this I often found myself writing code like this:</p>
+<pre><code class="language-csharp">var addresses = new List&lt;Address&gt;();
+
+foreach(var peron in people)
+{
+	foreach(var address in person.Addresses)
+	{
+		addresses.Add(address);
+	} 
+}</code></pre>
+<p class="text-justify">SelectMany will do this for you! The idea here is that this extension collapses collections of collections into a single collection. Here is an example of what that looks like:</p>
+<pre><code class="language-csharp">var addresses = people.SelectMany(p =&gt; p.Addresses);</code></pre>
+<p class="text-justify">My reaction when I found that I could simplify my code into this, I was so relieved. As it goes with Linq, however, you can take everything a step further with predicates and selectors. Suppose you did want a list of addresses with the person's first and last name (for mailing purposes, probably). Using anonymous types and the Select extension, this is very straightforward.</p>
+<pre><code class="language-csharp">var mailingInfo = people.SelectMany(p =&gt; p.Addresses.Select(a =&gt; new
+					{
+						p.FirstName,
+						p.LastName,
+						a.HouseNumber,
+						a.Street,
+						a.City,
+						a.State,
+						a.ZipCode
+					}));</code></pre>
+<p class="text-justify">The power here is in the junction of SelectMany and anonymous types. If you haven't seen anonymous types before, you should read more into it <a href="https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/types/anonymous-types">here</a>.</p>
+<p class="text-justify"><h1>Single/SingleOrDefault</h1></p>
+<p class="text-justify">These extensions don't need much explanation but I felt they require some attention because they're very useful. They work like the <a href="https://learn.microsoft.com/en-us/dotnet/api/system.linq.enumerable.first">First</a>/<1 href="https://learn.microsoft.com/en-us/dotnet/api/system.linq.enumerable.firstordefault">FirstOrDefault</a> extensions in that they return the first instance of an item in the collection (and when used with a predicate, that item must match the given predicate). The difference is that <a href="https://learn.microsoft.com/en-us/dotnet/api/system.linq.enumerable.single">Single</a> will search beyond the first occurance to verify that only one item exists in the collection that matches the given predicate. Single throw an exception if more than one item matches the defined condition. Additionally, Single will throw an exception if no items match the given condition, whereas <a href="https://learn.microsoft.com/en-us/dotnet/api/system.linq.enumerable.singleordefault">SingleOrDefault</a> will return the default value for the given type if no item in the collection matches the given condition. Let's walk through a few examples:</p>
+<pre><code class="language-csharp">people = new List&lt;Person&gt;
+{
+    new Person
+    {
+        Id = 1,
+        FirstName = &quot;Jen&quot;
+    },
+    new Person
+    {
+        Id = 2,
+        FirstName = &quot;Will&quot;
+    },
+    new Person
+    {
+        Id = 3,
+        FirstName = &quot;Jen&quot;
+    }
+};
+
+var a = people.First(); // id: 1, FirstName: Jen
+var b = people.FirstOrDefault(); // id: 1, FirstName: Jen
+var c = people.Single(); // Exception!
+var d = people.SingleOrDefault(); // Exception!
+
+var e = people.First(p =&gt; p.FirstName == &quot;Jen&quot;); // id: 1, FirstName: Jen
+var f = people.FirstOrDefault(p =&gt; p.FirstName == &quot;Jen&quot;); // id: 1, FirstName: Jen
+var g = people.Single(p =&gt; p.FirstName == &quot;Jen&quot;); // Exception!
+var h = people.SingleOrDefault(p =&gt; p.FirstName == &quot;Jen&quot;); // Exception!
+
+var i = people.First(p =&gt; p.FirstName == &quot;Will&quot;); // id: 2, FirstName: Will
+var j = people.FirstOrDefault(p =&gt; p.FirstName == &quot;Will&quot;); // id: 2, FirstName: Will
+var k = people.Single(p =&gt; p.FirstName == &quot;Will&quot;); // id: 2, FirstName: Will
+var l = people.SingleOrDefault(p =&gt; p.FirstName == &quot;Will&quot;); // id: 2, FirstName: Will
+
+var m = people.First(p =&gt; p.FirstName == &quot;Steve&quot;); // Exception!
+var n = people.FirstOrDefault(p =&gt; p.FirstName == &quot;Steve&quot;); // null
+var o = people.Single(p =&gt; p.FirstName == &quot;Steve&quot;); // Exception!
+var q = people.SingleOrDefault(p =&gt; p.FirstName == &quot;Steve&quot;); // null</code></pre>
+<p class="text-justify">I know that looks like a lot, but it's just a layout of what I said in the paragraph earlier. The major thing to note is just that Single/SingleOrDefault only allow one possible result to be returned, whereas First/FirstOrDefault will simply return the first item that could possible have been returned.</p>
+<p class="text-justify"><h1>Zip</h1></p>
+<p class="text-justify">Anyone working on a data import tool or the like will appreciate what <a href="https://learn.microsoft.com/en-us/dotnet/api/system.linq.enumerable.zip">Zip</a> has in store. This is another extension I ran into while implementing some business requirement I can't remember anymore. What Zip is capable of is amazingly simple but very useful. It takes two collections and, in order, allows you to apply a selector to the collections. Take a look at this example:</p>
+<pre><code class="language-csharp">var firstName = people.Select(p =&gt; p.FirstName);
+var lastName = people.Select(p =&gt; p.LastName);
+
+firstName.Zip(lastName, (first, last) =&gt; new Person
+    {
+        FirstName = first,
+        LastName = last
+    });</code></pre>
+<p class="text-justify">What this has done is take the two collections and take one item from the firstName collection and one item from the lastName collection and turn these two unrelated string fields together into a Person object. This can be very useful when you have multiple collections where each represents a single field or a few fields that are part of a larger data structure. </p>
+<p class="text-justify">The full, final code for this article can be found <a href="http://pastebin.com/dVDdA96W">here</a>. Have a look and remember these extensions in future projects to simplify your code. Thanks again for reading!</p>
+
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.23.0/prism.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.23.0/plugins/autoloader/prism-autoloader.min.js"></script>
+</body>
+</html>

@@ -100,7 +100,8 @@ namespace Blog.Generator
                 }
                 else if (isInCodeBlock)
                 {
-                    output.AppendLine(line);
+                    var escaped = line.Replace("<", "&lt;").Replace(">", "&gt;").Replace("\"", "&quot;");
+                    output.AppendLine(escaped);
                 }
                 else if (line.StartsWith('-') || line.StartsWith('#'))
                 {
