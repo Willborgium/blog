@@ -10,6 +10,8 @@ namespace Blog.Web
             CreateHostBuilder(args).Build().Run();
         }
 
+        // trigger deploy
+
         public static IHostBuilder CreateHostBuilder(string[] args) =>
             Host.CreateDefaultBuilder(args)
                 .ConfigureWebHostDefaults(webBuilder =>
