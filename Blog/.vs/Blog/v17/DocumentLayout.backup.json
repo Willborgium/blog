@@ -3,12 +3,16 @@
   "WorkspaceRootPath": "C:\\source\\blog\\Blog\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{A154BEE0-1D1B-419E-B302-45804DFFD768}|Blog.Web\\Blog.Web.csproj|c:\\source\\blog\\blog\\blog.web\\wwwroot\\index.html||{40D31677-CBC0-4297-A9EF-89D907823A98}",
-      "RelativeMoniker": "D:0:0:{A154BEE0-1D1B-419E-B302-45804DFFD768}|Blog.Web\\Blog.Web.csproj|solutionrelative:blog.web\\wwwroot\\index.html||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+      "AbsoluteMoniker": "D:0:0:{A154BEE0-1D1B-419E-B302-45804DFFD768}|Blog.Web\\Blog.Web.csproj|c:\\source\\blog\\blog\\blog.web\\wwwroot\\blog\\creating-an-ideal-logging-system.html||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{A154BEE0-1D1B-419E-B302-45804DFFD768}|Blog.Web\\Blog.Web.csproj|solutionrelative:blog.web\\wwwroot\\blog\\creating-an-ideal-logging-system.html||{40D31677-CBC0-4297-A9EF-89D907823A98}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{A154BEE0-1D1B-419E-B302-45804DFFD768}|Blog.Web\\Blog.Web.csproj|c:\\source\\blog\\blog\\blog.web\\wwwroot\\css\\main.css||{A5401142-F49D-43DB-90B1-F57BA349E55C}",
       "RelativeMoniker": "D:0:0:{A154BEE0-1D1B-419E-B302-45804DFFD768}|Blog.Web\\Blog.Web.csproj|solutionrelative:blog.web\\wwwroot\\css\\main.css||{A5401142-F49D-43DB-90B1-F57BA349E55C}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A154BEE0-1D1B-419E-B302-45804DFFD768}|Blog.Web\\Blog.Web.csproj|c:\\source\\blog\\blog\\blog.web\\wwwroot\\index.html||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{A154BEE0-1D1B-419E-B302-45804DFFD768}|Blog.Web\\Blog.Web.csproj|solutionrelative:blog.web\\wwwroot\\index.html||{40D31677-CBC0-4297-A9EF-89D907823A98}"
     }
   ],
   "DocumentGroupContainers": [
@@ -18,11 +22,24 @@
       "DocumentGroups": [
         {
           "DockedWidth": 273,
-          "SelectedChildIndex": 2,
+          "SelectedChildIndex": 1,
           "Children": [
             {
               "$type": "Bookmark",
               "Name": "ST:0:0:{1c4feeaa-4718-4aa9-859d-94ce25d182ba}"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "creating-an-ideal-logging-system.html",
+              "DocumentMoniker": "c:\\source\\blog\\Blog\\Blog.Web\\wwwroot\\blog\\creating-an-ideal-logging-system.html",
+              "RelativeDocumentMoniker": "Blog.Web\\wwwroot\\blog\\creating-an-ideal-logging-system.html",
+              "ToolTip": "c:\\source\\blog\\Blog\\Blog.Web\\wwwroot\\blog\\creating-an-ideal-logging-system.html",
+              "RelativeToolTip": "Blog.Web\\wwwroot\\blog\\creating-an-ideal-logging-system.html",
+              "ViewState": "AgIAABAAAAAAAAAAAIAxwCkAAAAFAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001512|",
+              "WhenOpened": "2024-11-20T16:59:13.603Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
@@ -39,13 +56,13 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
+              "DocumentIndex": 2,
               "Title": "index.html",
               "DocumentMoniker": "C:\\source\\blog\\Blog\\Blog.Web\\wwwroot\\index.html",
               "RelativeDocumentMoniker": "Blog.Web\\wwwroot\\index.html",
               "ToolTip": "C:\\source\\blog\\Blog\\Blog.Web\\wwwroot\\index.html",
               "RelativeToolTip": "Blog.Web\\wwwroot\\index.html",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA0AAAAHAAAAAAAAAA==",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABEAAAA7AAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001512|",
               "WhenOpened": "2024-11-20T16:24:28.096Z",
               "EditorCaption": ""

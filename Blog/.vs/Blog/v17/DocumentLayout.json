@@ -3,6 +3,9 @@
   "WorkspaceRootPath": "C:\\source\\blog\\Blog\\",
   "Documents": [
     {
+      "AbsoluteMoniker": "D:0:0:{96CB0347-8156-47E2-B933-91B639FAD436}|Solution Items{96CB0347-8156-47E2-B933-91B639FAD436}|c:\\source\\blog\\.github\\workflows\\main_wjcustode-blog.yml||{8B382828-6202-11D1-8870-0000F87579D2}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{A154BEE0-1D1B-419E-B302-45804DFFD768}|Blog.Web\\Blog.Web.csproj|c:\\source\\blog\\blog\\blog.web\\wwwroot\\blog\\creating-an-ideal-logging-system.html||{40D31677-CBC0-4297-A9EF-89D907823A98}",
       "RelativeMoniker": "D:0:0:{A154BEE0-1D1B-419E-B302-45804DFFD768}|Blog.Web\\Blog.Web.csproj|solutionrelative:blog.web\\wwwroot\\blog\\creating-an-ideal-logging-system.html||{40D31677-CBC0-4297-A9EF-89D907823A98}"
     },
@@ -31,19 +34,32 @@
             {
               "$type": "Document",
               "DocumentIndex": 0,
+              "Title": "main_wjcustode-blog.yml",
+              "DocumentMoniker": "c:\\source\\blog\\.github\\workflows\\main_wjcustode-blog.yml",
+              "RelativeDocumentMoniker": "..\\.github\\workflows\\main_wjcustode-blog.yml",
+              "ToolTip": "c:\\source\\blog\\.github\\workflows\\main_wjcustode-blog.yml",
+              "RelativeToolTip": "..\\.github\\workflows\\main_wjcustode-blog.yml",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAYAAAAHAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003775|",
+              "WhenOpened": "2024-11-20T18:42:32.802Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
               "Title": "creating-an-ideal-logging-system.html",
-              "DocumentMoniker": "c:\\source\\blog\\Blog\\Blog.Web\\wwwroot\\blog\\creating-an-ideal-logging-system.html",
+              "DocumentMoniker": "C:\\source\\blog\\Blog\\Blog.Web\\wwwroot\\blog\\creating-an-ideal-logging-system.html",
               "RelativeDocumentMoniker": "Blog.Web\\wwwroot\\blog\\creating-an-ideal-logging-system.html",
-              "ToolTip": "c:\\source\\blog\\Blog\\Blog.Web\\wwwroot\\blog\\creating-an-ideal-logging-system.html",
+              "ToolTip": "C:\\source\\blog\\Blog\\Blog.Web\\wwwroot\\blog\\creating-an-ideal-logging-system.html",
               "RelativeToolTip": "Blog.Web\\wwwroot\\blog\\creating-an-ideal-logging-system.html",
-              "ViewState": "AgIAABAAAAAAAAAAAIAxwCkAAAAFAAAAAAAAAA==",
+              "ViewState": "AgIAABAAAAAAAAAAAIAxwCcAAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001512|",
               "WhenOpened": "2024-11-20T16:59:13.603Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 2,
               "Title": "main.css",
               "DocumentMoniker": "C:\\source\\blog\\Blog\\Blog.Web\\wwwroot\\css\\main.css",
               "RelativeDocumentMoniker": "Blog.Web\\wwwroot\\css\\main.css",
@@ -51,12 +67,11 @@
               "RelativeToolTip": "Blog.Web\\wwwroot\\css\\main.css",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAYAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003000|",
-              "WhenOpened": "2024-11-20T16:26:52.276Z",
-              "EditorCaption": ""
+              "WhenOpened": "2024-11-20T16:26:52.276Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 3,
               "Title": "index.html",
               "DocumentMoniker": "C:\\source\\blog\\Blog\\Blog.Web\\wwwroot\\index.html",
               "RelativeDocumentMoniker": "Blog.Web\\wwwroot\\index.html",
@@ -64,8 +79,7 @@
               "RelativeToolTip": "Blog.Web\\wwwroot\\index.html",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAABEAAAA7AAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001512|",
-              "WhenOpened": "2024-11-20T16:24:28.096Z",
-              "EditorCaption": ""
+              "WhenOpened": "2024-11-20T16:24:28.096Z"
             }
           ]
         }
