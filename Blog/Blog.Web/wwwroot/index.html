@@ -4,33 +4,65 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>William Custode - Blog</title>
-    <link rel="stylesheet"
-          href="https://fonts.googleapis.com/css?family=Exo%202">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Playfair+Display:wght@700&display=swap">
     <link rel="stylesheet"
           href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/css/bootstrap.min.css"
           integrity="sha384-eOJMYsd53ii+scO/bJGFsiCZc+5NDVN2yr8+0RDqr0Ql0h+rP48ckxlpbzKgwra6"
           crossorigin="anonymous">
-    <link rel="stylesheet"
-          href="css/main.css"  />
+    <link rel="stylesheet" href="css/main.css">
 </head>
-<body> 
-    <div class="container">
-        <h1>Will Custode's Blog</h1>
-        <h2>Posts</h2>
-        <table class="table table-striped">
-            <tr>
-                <td><div class="blog-table-date">2015-09-13</div></td>
-                <td><a href="blog/some-linq-tips.html">Some Linq Tips</a></td>
-            </tr>
-            <tr>
-                <td><div class="blog-table-date">2015-07-24</div></td>
-                <td><a href="blog/a-robust-inotifypropertychanged-implementation.html">A Robust INotifyPropertyChanged Implementation</a></td>
-            </tr>
-            <tr>
-                <td><div class="blog-table-date">2015-07-17</div></td>
-                <td><a href="blog/creating-an-ideal-logging-system.html">Creating an ideal logging system</a></td>
-            </tr>
-        </table>
+<body>
+    <div class="container mt-5">
+        <header class="text-center mb-4">
+            <h1 class="blog-title">Will Custode's Blog</h1>
+        </header>
+        <section>
+            <div class="list-group post-list">
+                <a href="blog/lets-play-bizio-developer-edition-1.html" class="list-group-item list-group-item-action">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h3 class="post-title">Let's Play Bizio: Developer Edition 1</h3>
+                        <span class="text-muted post-date">2018-6-16</span>
+                    </div>
+                    <p class="post-subtitle text-muted">A reflective journey into game development challenges and triumphs.</p>
+                </a>
+                <a href="blog/some-linq-tips.html" class="list-group-item list-group-item-action">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h3 class="post-title">Some Linq Tips</h3>
+                        <span class="text-muted post-date">2015-9-13</span>
+                    </div>
+                    <p class="post-subtitle text-muted">Enhance your .NET coding with these powerful LINQ tricks.</p>
+                </a>
+                <a href="blog/a-robust-inotifypropertychanged-implementation.html" class="list-group-item list-group-item-action">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h3 class="post-title">A Robust INotifyPropertyChanged Implementation</h3>
+                        <span class="text-muted post-date">2015-7-24</span>
+                    </div>
+                    <p class="post-subtitle text-muted">Create dynamic, change-aware UIs with this robust implementation.</p>
+                </a>
+                <a href="blog/creating-an-ideal-logging-system.html" class="list-group-item list-group-item-action">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h3 class="post-title">Creating an Ideal Logging System</h3>
+                        <span class="text-muted post-date">2015-7-17</span>
+                    </div>
+                    <p class="post-subtitle text-muted">Design a logging system that is efficient and scalable.</p>
+                </a>
+            </div>
+        </section>
+        <footer class="social-links mt-5">
+            <a href="https://www.linkedin.com/in/wjcustode/" target="_blank">
+                <img src="https://content.linkedin.com/content/dam/me/business/en-us/amp/brand-site/v2/bg/LI-Bug.svg.original.svg" alt="LinkedIn">
+            </a>
+            <a href="https://github.com/willborgium" target="_blank">
+                <img src="https://github.githubassets.com/assets/GitHub-Mark-ea2971cee799.png" alt="GitHub">
+            </a>
+            <a href="https://gitlab.com/Willborgium" target="_blank">
+                <img src="https://images.ctfassets.net/xz1dnu24egyd/1IRkfXmxo8VP2RAE5jiS1Q/ea2086675d87911b0ce2d34c354b3711/gitlab-logo-500.png" alt="GitLab Willborgium">
+            </a>
+            <a href="https://gitlab.com/black-plain-games" target="_blank">
+                <img src="https://images.ctfassets.net/xz1dnu24egyd/6P0YId0C3ofFPyO0FaBhxl/4cd062515399f22779171cf661097319/gitlab-logo-600.png" alt="GitLab Black Plain Games">
+            </a>
+        </footer>
     </div>
 </body>
 </html>

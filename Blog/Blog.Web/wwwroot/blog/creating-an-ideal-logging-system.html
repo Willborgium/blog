@@ -16,20 +16,22 @@
           href="https://cdn.jsdelivr.net/npm/prismjs@1.23.0/themes/prism-okaidia.css">
 </head>
 <body>
-    <div class="container">
-        <h2>Creating an Ideal Logging System</h2>
-<p class="font-weight-light font-italic">2015-07-17</p>
-<p class="text-justify">This is the first article I am writing and decided to tackle a fairly straightforward topic. Every application I’ve worked on that was larger than a proof-of-concept benefited from some form of logging. The problem always was one of the following:</p>
-<ul>
-<li>There was no logging system at all</li>
-<li>The logging system was cumbersome to actually use</li>
-<li>The logging system logged way too much information</li>
-<li>The logging system wasn’t used in the most critical areas</li>
-</ul>
-<p class="text-justify">So the first point is going to be solved simply by reading this article. We are going to walk through creating a simple yet useful logging system that is extendible and solves the above problems. Without further ado, let’s begin!</p>
-<p class="text-justify">Before we begin, you can use the code <a href="https://pastebin.com/SwvHAF87">posted here</a> as reference for this article (or if you’re just returning here for the link).</p>
-<p class="text-justify">Actually, let’s set some context first. There’s always the initial debate of whether to make the logging system static. At first glance, it makes a lot of sense to have the system be static. This entirely depends on how you want to manage the lifetime of the logging object, and how you want to group the data that is being logged. For example, in a desktop application it might make perfect sense to have the system be static because only a single user or session will be active at one time so every notification that gets logged is part of that same session or belongs to that same user. However, in a web application (or any other service) that is consumed concurrently by many sessions or users, you may not want to do all of the work of having a thread-safe keyed collection of notifications to separate the notifications, or just pool up all of your notifications in one collection. We’ll talk about a strategy for persisting these notifications after. As a programmer at heart, I’m itching to write some code.</p>
-<pre><code class="language-csharp">public class LoggingService
+    <div class="container my-5">
+    <article>
+        <h2 class="display-4 mb-4 blog-title">Creating an Ideal Logging System</h2>
+        <p class="font-weight-light text-muted mb-4">2015-07-17</p>
+        <p class="text-justify mb-4">This is the first article I am writing and decided to tackle a fairly straightforward topic. Every application I’ve worked on that was larger than a proof-of-concept benefited from some form of logging. The problem always was one of the following:</p>
+        <ul class="list-group mb-4">
+            <li class="list-group-item">There was no logging system at all</li>
+            <li class="list-group-item">The logging system was cumbersome to actually use</li>
+            <li class="list-group-item">The logging system logged way too much information</li>
+            <li class="list-group-item">The logging system wasn’t used in the most critical areas</li>
+        </ul>
+        <p class="text-justify mb-4">So the first point is going to be solved simply by reading this article. We are going to walk through creating a simple yet useful logging system that is extendible and solves the above problems. Without further ado, let’s begin!</p>
+        <p class="text-justify mb-4">Before we begin, you can use the code <a href="https://pastebin.com/SwvHAF87" class="text-decoration-none">posted here</a> as reference for this article (or if you’re just returning here for the link).</p>
+        <p class="text-justify mb-4">Actually, let’s set some context first. There’s always the initial debate of whether to make the logging system static...</p>
+
+        <pre class="bg-dark text-white p-4 rounded"><code class="language-csharp">public class LoggingService
 {
     public LoggingService()
     {
@@ -43,30 +45,30 @@
  
     private List&lt;string&gt; _notifications;
 }</code></pre>
-<p class="text-justify">Okay, great! We can knock the first problem off the list; we now actually have a logging system. But it sucks, so we need to expand upon this. Right now, all we can do is say something and this system holds on to it. Now I’m going to lay down a couple of typical things I want my logging system to be able to track (in plain English):</p>
-<pre><code class="language-csharp">Noise: Some business logic step occurred.
+        <p class="text-justify mb-4">Okay, great! We can knock the first problem off the list; we now actually have a logging system. But it sucks, so we need to expand upon this. Right now, all we can do is say something and this system holds on to it. Now I’m going to lay down a couple of typical things I want my logging system to be able to track (in plain English):</p>
+<pre  class="bg-dark text-white p-4 rounded"><code class="language-csharp">Noise: Some business logic step occurred.
 Warning: Parameter 'accountId' is null.
 Exception: Object reference not set to an instance of type Object.</code></pre>
-<p class="text-justify">Given that, the current system does not easily facilitate dynamically construction that type of information. We must keep in mind that we don’t want this system to be seriously heavy, either in terms of clock cycles or memory footprint; performance issues should never come from ancillary systems. Thinking about what common factors exist within the few messages I’ve defined above, we can identify the following information:</p>
-<ul>
-<li>They have varying levels of importance</li>
-<li>They have text messages to display</li>
-<li>Some messages have dynamic components to them</li>
-</ul>
-<p class="text-justify">Let’s start by simply creating an enumeration for the first bullet point.</p>
-<pre><code class="language-csharp">public enum NotificationLevel
+        <p class="text-justify mb-4">Given that, the current system does not easily facilitate dynamically construction that type of information. We must keep in mind that we don’t want this system to be seriously heavy, either in terms of clock cycles or memory footprint; performance issues should never come from ancillary systems. Thinking about what common factors exist within the few messages I’ve defined above, we can identify the following information:</p>
+        <ul class="list-group mb-4">
+            <li class="list-group-item">They have varying levels of importance</li>
+            <li class="list-group-item">They have text messages to display</li>
+            <li class="list-group-item">Some messages have dynamic components to them</li>
+        </ul>
+        <p class="text-justify mb-4">Let’s start by simply creating an enumeration for the first bullet point.</p>
+<pre  class="bg-dark text-white p-4 rounded"><code class="language-csharp">public enum NotificationLevel
 {
     Noise,
     Warning,
     Exception
 }</code></pre>
-<p class="text-justify">We must now extend our implementation to support this. If we modify the Notify method to accept this additional piece of information, we should be good.</p>
-<pre><code class="language-csharp">public void Notify(NotificationLevel level, string message)
+        <p class="text-justify mb-4">We must now extend our implementation to support this. If we modify the Notify method to accept this additional piece of information, we should be good.</p>
+<pre  class="bg-dark text-white p-4 rounded"><code class="language-csharp">public void Notify(NotificationLevel level, string message)
 {
     _notifications.Add(string.Format(&quot;{0}: {1}&quot;, level, message));
 }</code></pre>
-<p class="text-justify">This is better and the messages it produces mirror those that I’ve written out above. Before we continue I’d like to identify a foreseeable problem with this system. If we continue to add arguments to this method, we’re doing some custom baked in logic to crush all of that useful information provided to us into a string. If we created a class that contained all of this information, it would certainly be more malleable when necessary. Imagine trying to look at these strings and determine which ones are noise and which are exceptions (programmatically, that is). It would be a waste of clock cycles when you could just create a class to contain this information. So we’re going to make an adjustment to our class as a whole and continue from this point. Now our code looks a little like this:</p>
-<pre><code class="language-csharp">public class Notification
+        <p class="text-justify mb-4">This is better and the messages it produces mirror those that I’ve written out above. Before we continue I’d like to identify a foreseeable problem with this system. If we continue to add arguments to this method, we’re doing some custom baked in logic to crush all of that useful information provided to us into a string. If we created a class that contained all of this information, it would certainly be more malleable when necessary. Imagine trying to look at these strings and determine which ones are noise and which are exceptions (programmatically, that is). It would be a waste of clock cycles when you could just create a class to contain this information. So we’re going to make an adjustment to our class as a whole and continue from this point. Now our code looks a little like this:</p>
+<pre  class="bg-dark text-white p-4 rounded"><code class="language-csharp">public class Notification
 {
     public NotificationLevel Level { get; set; }
  
@@ -99,40 +101,40 @@ public class LoggingService
  
     private List&lt;Notification&gt; _notifications;
 }</code></pre>
-<p class="text-justify">Now we have some structure to this. Notice that the logic that formats this has been moved to the Notification class’s ToString override? This makes a lot more sense because it is specifically related to how the Notification looks when it is a string, not “What the logging system thinks it should look like as a string”.</p>
-<p class="text-justify">Things are looking better, but we’re still missing some key features from an API usability standpoint. Sometimes messages provided are static, but some are dynamic. We can definitely expand our method to be able to do the string formatting internally for the user.</p>
-<pre><code class="language-csharp">public void Notify(NotificationLevel level, string format, params object[] args)
+        <p class="text-justify mb-4">Now we have some structure to this. Notice that the logic that formats this has been moved to the Notification class’s ToString override? This makes a lot more sense because it is specifically related to how the Notification looks when it is a string, not “What the logging system thinks it should look like as a string”.</p>
+        <p class="text-justify mb-4">Things are looking better, but we’re still missing some key features from an API usability standpoint. Sometimes messages provided are static, but some are dynamic. We can definitely expand our method to be able to do the string formatting internally for the user.</p>
+<pre  class="bg-dark text-white p-4 rounded"><code class="language-csharp">public void Notify(NotificationLevel level, string format, params object[] args)
 {
     _notifications.Add(new Notification(level, string.Format(format, args)));
 }</code></pre>
-<p class="text-justify">The simple addition of a params array allows us to make this method even more user friendly. Now we can fully construct all of the messages listed above simply. Here’s what they would look like in code:</p>
-<ul>
-<li>Noise: Some business logic step occurred.</li>
-</ul>
-<pre><code class="language-csharp">system.Notify(NotificationLevel.Noise, &quot;Some business logic step occurred.&quot;);</code></pre>
-<ul>
-<li>Warning: Parameter ‘accountId’ is null.</li>
-</ul>
-<pre><code class="language-csharp">system.Notify(NotificationLevel.Warning, &quot;Parameter '{0}' is null.&quot;, nameof(accountId));</code></pre>
-<ul>
-<li>Exception: Object reference not set to an instance of type Object.</li>
-</ul>
-<pre><code class="language-csharp">catch(Exception err)
+        <p class="text-justify mb-4">The simple addition of a params array allows us to make this method even more user friendly. Now we can fully construct all of the messages listed above simply. Here’s what they would look like in code:</p>
+        <ul class="list-group mb-4">
+            <li class="list-group-item">Noise: Some business logic step occurred.</li>
+        </ul>
+<pre  class="bg-dark text-white p-4 rounded"><code class="language-csharp">system.Notify(NotificationLevel.Noise, &quot;Some business logic step occurred.&quot;);</code></pre>
+        <ul class="list-group mb-4">
+            <li class="list-group-item">Warning: Parameter ‘accountId’ is null.</li>
+        </ul>
+<pre  class="bg-dark text-white p-4 rounded"><code class="language-csharp">system.Notify(NotificationLevel.Warning, &quot;Parameter '{0}' is null.&quot;, nameof(accountId));</code></pre>
+        <ul class="list-group mb-4">
+            <li class="list-group-item">Exception: Object reference not set to an instance of type Object.</li>
+        </ul>
+<pre  class="bg-dark text-white p-4 rounded"><code class="language-csharp">catch(Exception err)
 {
     system.Notify(NotificationLevel.Exception, err.Message);
     throw;
 }</code></pre>
-<p class="text-justify">From here, if we look back at the original problems, we can see we have handily done away with two of the four of them.</p>
-<ul>
-<li><strike>There was no logging system at all</strike></li>
-<li><strike>The logging system was cumbersome to actually use</strike></li>
-<li>The logging system logged way too much information</li>
-<li>The logging system wasn’t used in the most critical areas</li>
-</ul>
-<p class="text-justify">The last two points are both half solved, and I’ll explain why, because they’re intimately related. Too much logging is never a bad thing. Not being able to filter the important from the noise is the real problem. Too often I see systems where there isn’t enough separation in logging to make it useful for both debugging purposes and identifying critical failures. You should be able to see, very quickly, when a production system is throwing an exception. Additionally, you should be able to see every step of the business logic that led up to that exception. This is often hard to define, because developers tend to think in binary when it comes to logging: it is either a huge problem that this message is being generated or it’s just for my own debugging purposes. It is often hard to identify when some piece of code can safely fail and the system can continue. It is this information that we also want to categorize (and if you have a team of disciplined developers, you can continue to add further categorizations).</p>
-<p class="text-justify">So the best thing we can do to combat the lack of logging critical issues is to log as much as possible! Did an exception just fire? Log it. Did a decimal.TryParse return false? Log it. Did you just enter a method? Log it.</p>
-<p class="text-justify">So this completely ignores the third problem, and rightfully so. We should be logging everything we can. To solve the third problem can be solved by properly categorizing your information and architecting your data structures correctly. If we take a look back at the Notification class we can quickly identify that it’s missing a critical piece of information: when it happened! We can add a DateTime property and initialize it in our constructor with the current date. Additionally, the last piece of information that would be helpful during debugging is the stack trace. I’ll abridge the explanation of how to get that and just jump to the code. Here’s what our updated Notification looks like:</p>
-<pre><code class="language-csharp">public class Notification
+        <p class="text-justify mb-4">From here, if we look back at the original problems, we can see we have handily done away with two of the four of them.</p>
+        <ul class="list-group mb-4">
+            <li class="list-group-item"><strike>There was no logging system at all</strike></li>
+            <li class="list-group-item"><strike>The logging system was cumbersome to actually use</strike></li>
+            <li class="list-group-item">The logging system logged way too much information</li>
+            <li class="list-group-item">The logging system wasn’t used in the most critical areas</li>
+        </ul>
+        <p class="text-justify mb-4">The last two points are both half solved, and I’ll explain why, because they’re intimately related. Too much logging is never a bad thing. Not being able to filter the important from the noise is the real problem. Too often I see systems where there isn’t enough separation in logging to make it useful for both debugging purposes and identifying critical failures. You should be able to see, very quickly, when a production system is throwing an exception. Additionally, you should be able to see every step of the business logic that led up to that exception. This is often hard to define, because developers tend to think in binary when it comes to logging: it is either a huge problem that this message is being generated or it’s just for my own debugging purposes. It is often hard to identify when some piece of code can safely fail and the system can continue. It is this information that we also want to categorize (and if you have a team of disciplined developers, you can continue to add further categorizations).</p>
+        <p class="text-justify mb-4">So the best thing we can do to combat the lack of logging critical issues is to log as much as possible! Did an exception just fire? Log it. Did a decimal.TryParse return false? Log it. Did you just enter a method? Log it.</p>
+        <p class="text-justify mb-4">So this completely ignores the third problem, and rightfully so. We should be logging everything we can. To solve the third problem can be solved by properly categorizing your information and architecting your data structures correctly. If we take a look back at the Notification class we can quickly identify that it’s missing a critical piece of information: when it happened! We can add a DateTime property and initialize it in our constructor with the current date. Additionally, the last piece of information that would be helpful during debugging is the stack trace. I’ll abridge the explanation of how to get that and just jump to the code. Here’s what our updated Notification looks like:</p>
+<pre  class="bg-dark text-white p-4 rounded"><code class="language-csharp">public class Notification
 {
     public DateTime TimeStamp { get; set; }
  
@@ -158,13 +160,13 @@ public class LoggingService
         return string.Format(&quot;{0}: {1}&quot;, Level, Message);
     }
 }</code></pre>
-<p class="text-justify">A note about StackTrace: it is very slow. In production code you would only want to keep the stack trace in case of an exception. But for this example we will catch it for everything. We now have all of the information necessary for verbose, useful, categorical logging. With one of these Notifications we can quickly identify when and where something happened, what happened, and how serious it was. But with all this extra data, there are a couple of additional methods we want to add to our service to make it very user friendly. First, let’s make it really easy to add message that is just noise.</p>
-<pre><code class="language-csharp">public void Notify(string format, params object[] args)
+        <p class="text-justify mb-4">A note about StackTrace: it is very slow. In production code you would only want to keep the stack trace in case of an exception. But for this example we will catch it for everything. We now have all of the information necessary for verbose, useful, categorical logging. With one of these Notifications we can quickly identify when and where something happened, what happened, and how serious it was. But with all this extra data, there are a couple of additional methods we want to add to our service to make it very user friendly. First, let’s make it really easy to add message that is just noise.</p>
+<pre  class="bg-dark text-white p-4 rounded"><code class="language-csharp">public void Notify(string format, params object[] args)
 {
     Notify(NotificationLevel.Noise, format, args);
 }</code></pre>
-<p class="text-justify">The other case I want to mention is exceptions. The way we are currently setting StackTrace is not going to be correct in the case of an exception. We should handle exceptions a little differently. We’ll add the following constructor to our Notification class:</p>
-<pre><code class="language-csharp">public Notification(Exception err)
+        <p class="text-justify mb-4">The other case I want to mention is exceptions. The way we are currently setting StackTrace is not going to be correct in the case of an exception. We should handle exceptions a little differently. We’ll add the following constructor to our Notification class:</p>
+<pre  class="bg-dark text-white p-4 rounded"><code class="language-csharp">public Notification(Exception err)
 {
     TimeStamp = DateTime.Now;
  
@@ -174,19 +176,19 @@ public class LoggingService
  
     Message = err.Message;
 }</code></pre>
-<p class="text-justify">And the following method to our logging service:</p>
-<pre><code class="language-csharp">public void Notify(Exception err)
+        <p class="text-justify mb-4">And the following method to our logging service:</p>
+<pre  class="bg-dark text-white p-4 rounded"><code class="language-csharp">public void Notify(Exception err)
 {
     _notifications.Add(new Notification(err));
 }</code></pre>
-<p class="text-justify">Now with this, we are capable of logging a variety of different types of messages as simply as possible. Now what? Well, if you haven’t noticed, although we’re logging our notifications of everything and have solved our initial problems, we haven’t actually done anything useful. When the application closes or the app pool spins down, we lose all of this information. We’re going to need some way of persisting this information. The actual persistence of this information will be left up to you, but I’m going to show you the steps to take to make this system extensible for “doing something” with the notifications.</p>
-<p class="text-justify">We’re going to simply implement our logging system as an observable object. We’re not going to dive deep into this pattern in this article, so let’s look at the interface we need to define for our subscribers:</p>
-<pre><code class="language-csharp">public interface INotificationSubscriber
+        <p class="text-justify mb-4">Now with this, we are capable of logging a variety of different types of messages as simply as possible. Now what? Well, if you haven’t noticed, although we’re logging our notifications of everything and have solved our initial problems, we haven’t actually done anything useful. When the application closes or the app pool spins down, we lose all of this information. We’re going to need some way of persisting this information. The actual persistence of this information will be left up to you, but I’m going to show you the steps to take to make this system extensible for “doing something” with the notifications.</p>
+        <p class="text-justify mb-4">We’re going to simply implement our logging system as an observable object. We’re not going to dive deep into this pattern in this article, so let’s look at the interface we need to define for our subscribers:</p>
+<pre  class="bg-dark text-white p-4 rounded"><code class="language-csharp">public interface INotificationSubscriber
 {
     void ReceiveNotification(Notification notification);
 }</code></pre>
-<p class="text-justify">Pretty simple? Subscribers just need to be able to receive notifications. This immediately becomes useful because we can create a stream, essentially, to our database for these messages. You can then implement other mechanisms (like caching and waiting until a certain number have been held to flush the cache into the database, etc.) that make a particular subscriber more useful. You can also use a particular subscriber in lower environments and have one in production that is high performance, or whatever! We now need to modify our logging system slightly to accommodate this change. First we need to give subscribers the ability to subscribe.</p>
-<pre><code class="language-csharp">public class LoggingService
+        <p class="text-justify mb-4">Pretty simple? Subscribers just need to be able to receive notifications. This immediately becomes useful because we can create a stream, essentially, to our database for these messages. You can then implement other mechanisms (like caching and waiting until a certain number have been held to flush the cache into the database, etc.) that make a particular subscriber more useful. You can also use a particular subscriber in lower environments and have one in production that is high performance, or whatever! We now need to modify our logging system slightly to accommodate this change. First we need to give subscribers the ability to subscribe.</p>
+<pre  class="bg-dark text-white p-4 rounded"><code class="language-csharp">public class LoggingService
 {
     public LoggingService()
     {
@@ -211,19 +213,19 @@ public class LoggingService
  
     private List&lt;Notification&gt; _notifications;
 }</code></pre>
-<p class="text-justify">Now that subscribers can be added and removed, we’re ready to actually notify them. We can encapsulate this in a method and use it in our Notify methods.</p>
-<pre><code class="language-csharp">protected void NotifySubscribers(Notification notification)
+        <p class="text-justify mb-4">Now that subscribers can be added and removed, we’re ready to actually notify them. We can encapsulate this in a method and use it in our Notify methods.</p>
+<pre  class="bg-dark text-white p-4 rounded"><code class="language-csharp">protected void NotifySubscribers(Notification notification)
 {
     foreach(var subscriber in _subscribers)
     {
         subscriber.ReceiveNotification(notification);
     }
 }</code></pre>
-<p class="text-justify">That’s everything! This system is ready for some mainstream consumption. There are minor tweaks you can make based on your domain to make this system more friendly or performant given your needs, but this is a solution to all of the problems we initially listed and is now extendable for future development projects.</p>
-<p class="text-justify">The full source for this post is <a href="https://pastebin.com/SwvHAF87">available here</a>.</p>
+        <p class="text-justify mb-4">That’s everything! This system is ready for some mainstream consumption. There are minor tweaks you can make based on your domain to make this system more friendly or performant given your needs, but this is a solution to all of the problems we initially listed and is now extendable for future development projects.</p>
+        <p class="text-justify mb-4">The full source for this post is <a href="https://pastebin.com/SwvHAF87" class="text-decoration-none">available here</a>.</p>
 
-    </div>
-    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.23.0/prism.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.23.0/plugins/autoloader/prism-autoloader.min.js"></script>
+        </div>
+        <script src="https://cdn.jsdelivr.net/npm/prismjs@1.23.0/prism.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/prismjs@1.23.0/plugins/autoloader/prism-autoloader.min.js"></script>
 </body>
 </html>

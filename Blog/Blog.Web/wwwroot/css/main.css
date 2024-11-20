@@ -1,22 +1,77 @@
-﻿div {
-    font-family: 'Exo 2', sans-serif;
+﻿/* General Typography */
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: #f8f9fa;
+    color: #212529;
 }
 
-a:link {
-    text-decoration: none;
+/* Blog Title */
+.blog-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 3rem; /* Larger title size */
+    font-weight: 700; /* Bold weight for emphasis */
+    color: #212529; /* Dark text color for contrast */
+    letter-spacing: 1px; /* Subtle letter-spacing to make the title more elegant */
 }
 
-a:visited {
-    text-decoration: none;
-    font-style: italic;
+
+/* Post Title */
+.post-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #212529; /* Strong text color for emphasis */
+    margin: 0;
 }
 
-a:hover {
-    text-decoration: underline;
-    font-style: italic;
+    .post-title:hover {
+        text-decoration: underline;
+    }
+
+/* Post Subtitle */
+.post-subtitle {
+    font-size: 0.875rem;
+    margin: 0;
+    line-height: 1.4;
 }
 
-.blog-table-date {
-    font-weight: bold;
-    float: right;
+/* Post Date */
+.post-date {
+    font-size: 0.875rem;
+}
+
+/* Post List */
+.post-list .list-group-item {
+    border-radius: 10px;
+    border: none;
+    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    background-color: #ffffff;
+    margin-bottom: 10px;
+}
+
+    .post-list .list-group-item:hover {
+        transform: translateY(-2px);
+        box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.15);
+    }
+
+
+
+/* Social Links */
+.social-links img {
+    width: 40px;
+    height: 40px;
+    margin: 0 10px;
+}
+
+.social-links {
+    margin: 20px 0;
+    text-align: center;
+}
+
+/* GitLab Studio Link */
+.gitlab-studio-link {
+    background-color: #fca326;
+    padding: 5px;
+    border-radius: 5px;
+    display: inline-block;
 }

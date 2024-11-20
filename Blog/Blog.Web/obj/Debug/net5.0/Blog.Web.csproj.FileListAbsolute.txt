@@ -20,3 +20,8 @@ c:\source\blog\Blog\Blog.Web\obj\Debug\net5.0\Blog.Web.pdb
 c:\source\blog\Blog\Blog.Web\obj\Debug\net5.0\Blog.Web.genruntimeconfig.cache
 c:\source\blog\Blog\Blog.Web\obj\Debug\net5.0\Blog.Web.csproj.AssemblyReference.cache
 c:\source\blog\Blog\Blog.Web\obj\Debug\net5.0\refint\Blog.Web.dll
+c:\source\blog\Blog\Blog.Web\obj\Debug\net5.0\staticwebassets\Blog.Web.StaticWebAssets.Pack.cache
+c:\source\blog\Blog\Blog.Web\obj\Debug\net5.0\staticwebassets\msbuild.Blog.Web.Microsoft.AspNetCore.StaticWebAssets.props
+c:\source\blog\Blog\Blog.Web\obj\Debug\net5.0\staticwebassets\msbuild.build.Blog.Web.props
+c:\source\blog\Blog\Blog.Web\obj\Debug\net5.0\staticwebassets\msbuild.buildMultiTargeting.Blog.Web.props
+c:\source\blog\Blog\Blog.Web\obj\Debug\net5.0\staticwebassets\msbuild.buildTransitive.Blog.Web.props
