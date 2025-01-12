@@ -1,4 +1,4 @@
 Let's Play Bizio: Developer Edition 1
 2018-06-16
 It’s been a long time coming but I’ve finally recorded the first demo of Bizio. In this half-hour special we’ll start a company with Will Smith, tackle an easy portfolio project, hire some employees, slash salaries, and so much more. Take a look, leave some comments, and get pumped because Bizio is moving along. I’ll continue producing videos more regularly to cover particular features as they are added and in a while we’ll do another playtesting demo. Enjoy!
-<iframe width="560" height="315" src="https://www.youtube.com/embed/Ta8yMNewwWI?si=gn50coxLS4Rqz8XG" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+$youtube Ta8yMNewwWI
