@@ -3,9 +3,10 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>William Custode - Blog</title>
+      <title>A Robust INotifyPropertyChanged Implementation - William Custode</title>
+      <meta name="description" content="Today I’d like to share with you one of my most valued base classes when developing a WPF or WinRT application. Given that WPF applications are intrinsically designed...">
     <link rel="stylesheet"
-          href="https://fonts.googleapis.com/css?family=Exo%202">
+              href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Playfair+Display:wght@700&display=swap">
     <link rel="stylesheet"
           href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/css/bootstrap.min.css"
           integrity="sha384-eOJMYsd53ii+scO/bJGFsiCZc+5NDVN2yr8+0RDqr0Ql0h+rP48ckxlpbzKgwra6"
@@ -16,18 +17,23 @@
           href="https://cdn.jsdelivr.net/npm/prismjs@1.23.0/themes/prism-okaidia.css">
 </head>
 <body>
-    <div class="container">
-        <h2>A Robust INotifyPropertyChanged Implementation</h2>
-<p class="font-weight-light font-italic">2015-07-24</p>
-<p class="text-justify">Today I’d like to share with you one of my most valued base classes when developing a WPF or WinRT application. Given that WPF applications are intrinsically designed to work well with the <a href="https://msdn.microsoft.com/en-us/library/ff798384.aspx">MVVM pattern</a> (or perhaps the other way around) it should come as no surprise that every project that implements this pattern has some implementation of the <a href="https://msdn.microsoft.com/en-us/library/system.componentmodel.inotifypropertychanged(v=vs.110).aspx">INotifyPropertyChanged interface</a>. I’ve seen a few different variations (all generally very simple) and, in this article, I’d like to present my latest iteration on this crucial base class. Let’s first start by identifying the problems we are trying to solve.</p>
+      <main class="container page-wrap">
+            <article class="post-content-wrap">
+                  <header class="post-header">
+                        <p><a href="../index.html" class="back-link">← All posts</a></p>
+                        <h1 class="blog-title post-page-title">A Robust INotifyPropertyChanged Implementation</h1>
+                        <p class="post-meta"><time datetime="2015-07-24">2015-07-24</time></p>
+                  </header>
+                  <section class="post-content">
+                        <p>Today I’d like to share with you one of my most valued base classes when developing a WPF or WinRT application. Given that WPF applications are intrinsically designed to work well with the <a href="https://msdn.microsoft.com/en-us/library/ff798384.aspx">MVVM pattern</a> (or perhaps the other way around) it should come as no surprise that every project that implements this pattern has some implementation of the <a href="https://msdn.microsoft.com/en-us/library/system.componentmodel.inotifypropertychanged(v=vs.110).aspx">INotifyPropertyChanged interface</a>. I’ve seen a few different variations (all generally very simple) and, in this article, I’d like to present my latest iteration on this crucial base class. Let’s first start by identifying the problems we are trying to solve.</p>
 <ul>
 <li>We need an implementation of the INotifyPropertyChanged interface to allow for data binding</li>
 <li>We need some safe and convenient syntax for calling the event handler for PropertyChanged</li>
 <li>We need to make this call thread safe</li>
 <li>We need to reduce the memory footprint of this call</li>
-<li>*BONUS* Can we factor a pattern out of our code?</li>
+<li><em>BONUS</em> Can we factor a pattern out of our code?</li>
 </ul>
-<p class="text-justify">The entire source code for this article can be found <a href="http://pastebin.com/hfzsYvis">here</a>. Feel free to use it as a guide when we walk through each piece of this example. Let’s start with our basic implementation of this interface.</p>
+<p>The entire source code for this article can be found <a href="http://pastebin.com/hfzsYvis">here</a>. Feel free to use it as a guide when we walk through each piece of this example. Let’s start with our basic implementation of this interface.</p>
 <pre><code class="language-csharp">public class NotifyOnPropertyChanged : INotifyPropertyChanged
 {
     public event PropertyChangedEventHandler PropertyChanged;
@@ -39,8 +45,9 @@
             PropertyChanged(this, new PropertyChangedEventArgs(property));
         }
     }
-}</code></pre>
-<p class="text-justify">This gives us everything we need to get off the ground. By inheriting this class in our view-models and models we’ll be able to perform data binding between the UI and our back end. But this class is wrought with potential problems. Before we dive into that, I’d like us to also have a pretend view-model that we’re updating as we go along, so let’s use the following code for that.</p>
+}
+</code></pre>
+<p>This gives us everything we need to get off the ground. By inheriting this class in our view-models and models we’ll be able to perform data binding between the UI and our back end. But this class is wrought with potential problems. Before we dive into that, I’d like us to also have a pretend view-model that we’re updating as we go along, so let’s use the following code for that.</p>
 <pre><code class="language-csharp">public class PretendViewModel : NotifyOnPropertyChanged
 {
     private string _name;
@@ -58,10 +65,12 @@
             // In C# 6.0: OnPropertyChanged(nameof(name));
         }
     }
-}</code></pre>
-<p class="text-justify">This is a very simple view-model with a single property (Name) that is now eligible for proper data binding thanks to our handy implementation of INotifyPropertyChanged. What I don’t like is how easy it would be to make a mistake with the string you’re passing in to OnPropertyChanged (or how easy it would be to let this go out of sync in the event that the property name changes). C# 6.0 solved this by introducing the <a href="https://msdn.microsoft.com/en-us/magazine/dn802602.aspx">nameof operator</a>, which I believe was solely introduced for this purpose but that’s beside the point. Regardless, such a crucial base class should not rely on the most cutting edge language features. Given that, if we modify our method signature by adding the <a href="https://msdn.microsoft.com/en-us/library/system.runtime.compilerservices.callermembernameattribute(v=vs.110).aspx">[CallerMemberName]</a> attribute to the property parameter we resolve this issue completely (note that this attribute was introduced in .NET 4.5). The update signature looks as follows.</p>
-<pre><code class="language-csharp">public void OnPropertyChanged([CallerMemberName]string property = &quot;&quot;)</code></pre>
-<p class="text-justify">Properties decorated with the CallerMemberName attribute must have a default value. Now our updated view-model property looks like this:</p>
+}
+</code></pre>
+<p>This is a very simple view-model with a single property (Name) that is now eligible for proper data binding thanks to our handy implementation of INotifyPropertyChanged. What I don’t like is how easy it would be to make a mistake with the string you’re passing in to OnPropertyChanged (or how easy it would be to let this go out of sync in the event that the property name changes). C# 6.0 solved this by introducing the <a href="https://msdn.microsoft.com/en-us/magazine/dn802602.aspx">nameof operator</a>, which I believe was solely introduced for this purpose but that’s beside the point. Regardless, such a crucial base class should not rely on the most cutting edge language features. Given that, if we modify our method signature by adding the <a href="https://msdn.microsoft.com/en-us/library/system.runtime.compilerservices.callermembernameattribute(v=vs.110).aspx">[CallerMemberName]</a> attribute to the property parameter we resolve this issue completely (note that this attribute was introduced in .NET 4.5). The update signature looks as follows.</p>
+<pre><code class="language-csharp">public void OnPropertyChanged([CallerMemberName]string property = &quot;&quot;)
+</code></pre>
+<p>Properties decorated with the CallerMemberName attribute must have a default value. Now our updated view-model property looks like this:</p>
 <pre><code class="language-csharp">public class PretendViewModel : NotifyOnPropertyChanged
 {
     private string _name;
@@ -78,8 +87,9 @@
             OnPropertyChanged();
         }
     }
-}</code></pre>
-<p class="text-justify">It puts me at ease knowing that updating the name of our property won’t cause any buggy UI issues. Now we can address the next issue: thread safety. More often than not I’ve run into a situation where some worker thread is trying to report progress to the UI and I naively forget how this class is implemented and write something simple like:</p>
+}
+</code></pre>
+<p>It puts me at ease knowing that updating the name of our property won’t cause any buggy UI issues. Now we can address the next issue: thread safety. More often than not I’ve run into a situation where some worker thread is trying to report progress to the UI and I naively forget how this class is implemented and write something simple like:</p>
 <pre><code class="language-csharp">public void SomeMethod()
 {
     Task.Factory.StartNew(() =&gt;
@@ -87,8 +97,9 @@
             // Doing some work...
             Name = &quot;Status update!&quot;;
         });
-}</code></pre>
-<p class="text-justify">And boom! The world comes crashing down. WPF only allows updates to be made to the UI from the UI thread, which is the thread the application was started from. I often end up writing a bit of code like this to allow my UI updates to take place:</p>
+}
+</code></pre>
+<p>And boom! The world comes crashing down. WPF only allows updates to be made to the UI from the UI thread, which is the thread the application was started from. I often end up writing a bit of code like this to allow my UI updates to take place:</p>
 <pre><code class="language-csharp">public void SomeMethod()
 {
     var ui = Dispatcher.CurrentDispatcher;
@@ -101,10 +112,11 @@
                     Name = &quot;Status update!&quot;;
                 }));
         });
-}</code></pre>
-<p class="text-justify">Although this solves the problem it introduces a lot of new code; we have effectively turned our string assignment into a method call, and a lambda. For me, that’s too cumbersome to have to deal with more than once. If we look at this code we can identify two key components. First we must get a hold of the UI thread. Second we must move our code over to the UI thread when we are not currently on it.</p>
-<p class="text-justify">A subtle note about the issue. The exception that is raised is not raised as a result of the assignment to our backer field. It is the propagation of this assignment to the UI via the call to the PropertyChanged event handler that causes this. As such, in our NotifyOnPropertyChanged class, we can control this behavior without having to know about what is actually being assigned.</p>
-<p class="text-justify">Let’s start by completing the first step. We need to add a field to hold the Dispatcher associated with the UI thread. The <a href="https://msdn.microsoft.com/en-us/library/system.windows.threading.dispatcher(v=vs.110).aspx">Dispatcher in WPF</a> is a class that is used for simplifying communication between threads. We then need to add a method that allows us to set the UI dispatcher. Here’s what I’ve come up with:</p>
+}
+</code></pre>
+<p>Although this solves the problem it introduces a lot of new code; we have effectively turned our string assignment into a method call, and a lambda. For me, that’s too cumbersome to have to deal with more than once. If we look at this code we can identify two key components. First we must get a hold of the UI thread. Second we must move our code over to the UI thread when we are not currently on it.</p>
+<p>A subtle note about the issue. The exception that is raised is not raised as a result of the assignment to our backer field. It is the propagation of this assignment to the UI via the call to the PropertyChanged event handler that causes this. As such, in our NotifyOnPropertyChanged class, we can control this behavior without having to know about what is actually being assigned.</p>
+<p>Let’s start by completing the first step. We need to add a field to hold the Dispatcher associated with the UI thread. The <a href="https://msdn.microsoft.com/en-us/library/system.windows.threading.dispatcher(v=vs.110).aspx">Dispatcher in WPF</a> is a class that is used for simplifying communication between threads. We then need to add a method that allows us to set the UI dispatcher. Here’s what I’ve come up with:</p>
 <pre><code class="language-csharp">private static Dispatcher _ui;
  
 public static void SetUI()
@@ -117,9 +129,10 @@ public static void SetUI()
     {
         throw new Exception(&quot;Cannot set UI dispatcher more than once.&quot;);
     }
-}</code></pre>
-<p class="text-justify">The way this is typically used is to call NotifyOnPropertyChanged.SetUI right after the InitializeComponent method has been called on your highest level control (typically your MainWindow). From this point on you don’t need to worry about it because every class will have it set; that’s the beauty of using static in this case.</p>
-<p class="text-justify">The second part of this is updating our OnPropertyChanged method to properly switch threads if need be. We must identify if we are not currently on the UI thread and then either switch threads or continue our execution.</p>
+}
+</code></pre>
+<p>The way this is typically used is to call NotifyOnPropertyChanged.SetUI right after the InitializeComponent method has been called on your highest level control (typically your MainWindow). From this point on you don’t need to worry about it because every class will have it set; that’s the beauty of using static in this case.</p>
+<p>The second part of this is updating our OnPropertyChanged method to properly switch threads if need be. We must identify if we are not currently on the UI thread and then either switch threads or continue our execution.</p>
 <pre><code class="language-csharp">public void OnPropertyChanged([CallerMemberName]string property = &quot;&quot;)
 {
     if (PropertyChanged != null)
@@ -133,9 +146,10 @@ public static void SetUI()
             _ui.BeginInvoke(new Action(() =&gt; PropertyChanged(this, new PropertyChangedEventArgs(property))));
         }
     }
-}</code></pre>
-<p class="text-justify">Now our worker thread doesn’t have to do anything special. An assignment to our binding-ready property doesn’t care whether it’s made from the UI thread or not. We can simply revert our worker thread code back to the first example and move on. Much simpler!</p>
-<p class="text-justify">So now we get to the “optimizations” section of this article. Premature optimizations are a terrible idea. This section of code was only introduced when I actually ran into issues where so many UI updates were being made that there was a measurable tick in performance due to the number of new calls that were being made as a result of calling OnPropertyChanged. If you notice we don’t do anything special every time this is called. It’s simply passing the property name in to the event handler by wrapping it in a special class. If we make 1000 assignments to our Name property, we’re creating 1000 PropertyChangedEventArgs objects that are exactly the same. I don’t like that. What we could do is build a local cache that associates a PropertyChangedEventArgs with a string (the property name) and leverage that. This way we will only ever create a single instance.</p>
+}
+</code></pre>
+<p>Now our worker thread doesn’t have to do anything special. An assignment to our binding-ready property doesn’t care whether it’s made from the UI thread or not. We can simply revert our worker thread code back to the first example and move on. Much simpler!</p>
+<p>So now we get to the “optimizations” section of this article. Premature optimizations are a terrible idea. This section of code was only introduced when I actually ran into issues where so many UI updates were being made that there was a measurable tick in performance due to the number of new calls that were being made as a result of calling OnPropertyChanged. If you notice we don’t do anything special every time this is called. It’s simply passing the property name in to the event handler by wrapping it in a special class. If we make 1000 assignments to our Name property, we’re creating 1000 PropertyChangedEventArgs objects that are exactly the same. I don’t like that. What we could do is build a local cache that associates a PropertyChangedEventArgs with a string (the property name) and leverage that. This way we will only ever create a single instance.</p>
 <pre><code class="language-csharp">public void OnPropertyChanged([CallerMemberName]string property = &quot;&quot;)
 {
     PropertyChangedEventArgs args = null;
@@ -167,9 +181,10 @@ public static void SetUI()
     }
 }
 
-private IDictionary&lt;string, PropertyChangedEventArgs&gt; _args;</code></pre>
-<p class="text-justify">What we’ve done here is fairly straightforward. We added a dictionary that associates property names with the PropertyChangedEventArgs object that is generated by a call to OnPropertyChanged for that property. We then run a couple of conditions in our method to verify the cache is constructed and contains our item. We then use the item from the cache. It’s as simple as that! Now we’ve seriously reduced the memory footprint of this class.</p>
-<p class="text-justify">So what’s that bonus I was talking about at the beginning of the article? Let’s first take a look back at our property, then we can talk about a pattern.</p>
+private IDictionary&lt;string, PropertyChangedEventArgs&gt; _args;
+</code></pre>
+<p>What we’ve done here is fairly straightforward. We added a dictionary that associates property names with the PropertyChangedEventArgs object that is generated by a call to OnPropertyChanged for that property. We then run a couple of conditions in our method to verify the cache is constructed and contains our item. We then use the item from the cache. It’s as simple as that! Now we’ve seriously reduced the memory footprint of this class.</p>
+<p>So what’s that bonus I was talking about at the beginning of the article? Let’s first take a look back at our property, then we can talk about a pattern.</p>
 <pre><code class="language-csharp">private string _name;
  
 public string Name
@@ -183,14 +198,16 @@ public string Name
         _name = value;
         OnPropertyChanged();
     }
-}</code></pre>
-<p class="text-justify">This is your standard, run of the mill WPF data-bindable property. I don’t like it, and neither should you. If your code uses properties like this and you don’t bat an eyelash then your application must be pretty light on it’s data-binding. There’s no guard around the call to OnPropertyChanged, meaning if I assign the same value to this property over and over and over, it’ll freeze my UI by propagating information that actually has no benefit for the user. A simple fix for this is to wrap the body of the setter in an if statement:</p>
+}
+</code></pre>
+<p>This is your standard, run of the mill WPF data-bindable property. I don’t like it, and neither should you. If your code uses properties like this and you don’t bat an eyelash then your application must be pretty light on it’s data-binding. There’s no guard around the call to OnPropertyChanged, meaning if I assign the same value to this property over and over and over, it’ll freeze my UI by propagating information that actually has no benefit for the user. A simple fix for this is to wrap the body of the setter in an if statement:</p>
 <pre><code class="language-csharp">if (value != _name)
 {
     _name = value;
     OnPropertyChanged();
-}</code></pre>
-<p class="text-justify">Great, now we’re onto something. All of this may seem innocuous, as most code does in an article online. Out of context and only in a single use case, this seems like it isn’t that overwhelming. When I refactor code I like to take a look at the small wins and the big wins. Sometimes a worthwhile refactor is when you are able to greatly reduce the complexity of a 1000 line method down to a few hundred with comments and improved design. Other times it comes in the form of development speed, accuracy, and predictability. If we think about what we’re doing here, all we want is to add a property with a set and a get that can communicate with the UI. The methods I’m about to introduce reduce the amount of code required to achieve this same effect. An added benefit is that we will have unified all of our backer fields, allowing us to make incremental improvements or enhancements to our data retrieval techniques.</p>
+}
+</code></pre>
+<p>Great, now we’re onto something. All of this may seem innocuous, as most code does in an article online. Out of context and only in a single use case, this seems like it isn’t that overwhelming. When I refactor code I like to take a look at the small wins and the big wins. Sometimes a worthwhile refactor is when you are able to greatly reduce the complexity of a 1000 line method down to a few hundred with comments and improved design. Other times it comes in the form of development speed, accuracy, and predictability. If we think about what we’re doing here, all we want is to add a property with a set and a get that can communicate with the UI. The methods I’m about to introduce reduce the amount of code required to achieve this same effect. An added benefit is that we will have unified all of our backer fields, allowing us to make incremental improvements or enhancements to our data retrieval techniques.</p>
 <pre><code class="language-csharp">private IDictionary&lt;string, object&gt; _fields;
  
 protected void SetField(object value, bool doNotify = true, [CallerMemberName] string property = &quot;&quot;)
@@ -213,14 +230,15 @@ protected void SetField(object value, bool doNotify = true, [CallerMemberName] s
     {
         OnPropertyChanged(property);
     }
-}</code></pre>
-<p class="text-justify">Using an approach similar to the cache we constructed for the PropertyChangedEventArgs, we’re storing the backer fields in a dictionary and associating them with the property name. This is safe because we leverage the language rule that no two properties in a class can have the same name; intrinsically unique. We add the additional doNotify property to allow consumers of this method to silently update values. Note that it is still entirely possible for the consumer to control when this property is updated by calling OnPropertyChanged themselves.</p>
-<p class="text-justify">Now for the getter. This one is also very straightforward but powerful.</p>
+}
+</code></pre>
+<p>Using an approach similar to the cache we constructed for the PropertyChangedEventArgs, we’re storing the backer fields in a dictionary and associating them with the property name. This is safe because we leverage the language rule that no two properties in a class can have the same name; intrinsically unique. We add the additional doNotify property to allow consumers of this method to silently update values. Note that it is still entirely possible for the consumer to control when this property is updated by calling OnPropertyChanged themselves.</p>
+<p>Now for the getter. This one is also very straightforward but powerful.</p>
 <pre><code class="language-csharp">protected T GetField&lt;T&gt;(T defaultValue, [CallerMemberName]string name = &quot;&quot;)
 {
     var output = defaultValue;
  
-    if (_fields != null && _fields.ContainsKey(name))
+    if (_fields != null &amp;&amp; _fields.ContainsKey(name))
     {
         var value = _fields[name];
  
@@ -235,13 +253,15 @@ protected void SetField(object value, bool doNotify = true, [CallerMemberName] s
     }
  
     return output;
-}</code></pre>
-<p class="text-justify">This method verifies that the requested property exists in the cache. If it doesn’t, it returns the user-specified default value. This might seem like overkill for the getter. Now I have to specify a default value when I call my getter? That doesn’t seem like it’s more user-friendly. Well a simple overload abstracts this functionality and gives you the freedom to express your intentions as succinctly or verbosely as you’d like.</p>
+}
+</code></pre>
+<p>This method verifies that the requested property exists in the cache. If it doesn’t, it returns the user-specified default value. This might seem like overkill for the getter. Now I have to specify a default value when I call my getter? That doesn’t seem like it’s more user-friendly. Well a simple overload abstracts this functionality and gives you the freedom to express your intentions as succinctly or verbosely as you’d like.</p>
 <pre><code class="language-csharp">protected T GetField&lt;T&gt;([CallerMemberName]string name = &quot;&quot;)
 {
     return GetField(default(T), name);
-}</code></pre>
-<p class="text-justify">This is the method that would typically be used in a getter. For reference types it will return null if there is no value in the cache. For value types, such as integers, it will return a default value (which for integers would be 0). This preserves the functionality that is offered by having manually-implemented backer fields. Let’s look at how sweet this syntax really is in action.</p>
+}
+</code></pre>
+<p>This is the method that would typically be used in a getter. For reference types it will return null if there is no value in the cache. For value types, such as integers, it will return a default value (which for integers would be 0). This preserves the functionality that is offered by having manually-implemented backer fields. Let’s look at how sweet this syntax really is in action.</p>
 <pre><code class="language-csharp">public string Name
 {
     get
@@ -252,11 +272,14 @@ protected void SetField(object value, bool doNotify = true, [CallerMemberName] s
     {
         SetField(value);
     }
-}</code></pre>
-<p class="text-justify">It may not seem like much of a gain; honestly we’ve only trimmed a handful of lines of code off of this. From experience, though, I can say that this has saved me a tremendous amount of repetitious code writing that even things like code-snippets in Visual Studio or plain old copy and past couldn’t provide. This has now given us everything we’ve striven for. We now have a fast, thread safe, user friendly implementation of INotifyPropertyChanged that can be used across our WPF and WinRT view models and models. What more could you want?</p>
-<p class="text-justify">The full, final code for this article can be found <a href="http://pastebin.com/hfzsYvis">here</a>. Have a look, make changes, and hopefully it helps you in your quest to deliver quality software. If you have any questions or comments don’t hesitate to leave them here. Thanks again for reading!</p>
+}
+</code></pre>
+<p>It may not seem like much of a gain; honestly we’ve only trimmed a handful of lines of code off of this. From experience, though, I can say that this has saved me a tremendous amount of repetitious code writing that even things like code-snippets in Visual Studio or plain old copy and past couldn’t provide. This has now given us everything we’ve striven for. We now have a fast, thread safe, user friendly implementation of INotifyPropertyChanged that can be used across our WPF and WinRT view models and models. What more could you want?</p>
+<p>The full, final code for this article can be found <a href="http://pastebin.com/hfzsYvis">here</a>. Have a look, make changes, and hopefully it helps you in your quest to deliver quality software. If you have any questions or comments don’t hesitate to leave them here. Thanks again for reading!</p>
 
-    </div>
+                  </section>
+            </article>
+      </main>
     <script src="https://cdn.jsdelivr.net/npm/prismjs@1.23.0/prism.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/prismjs@1.23.0/plugins/autoloader/prism-autoloader.min.js"></script>
 </body>

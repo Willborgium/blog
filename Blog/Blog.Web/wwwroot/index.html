@@ -1,10 +1,10 @@
-﻿<!DOCTYPE html>
-<html>
+<!DOCTYPE html>
+<html lang="en">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>William Custode - Blog</title>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap">
+    <meta name="description" content="Engineering notes, project updates, and software architecture posts from William Custode.">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Playfair+Display:wght@700&display=swap">
     <link rel="stylesheet"
           href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/css/bootstrap.min.css"
@@ -13,63 +13,64 @@
     <link rel="stylesheet" href="css/main.css">
 </head>
 <body>
-    <div class="container mt-5">
+    <main class="container page-wrap">
         <header class="text-center mb-4">
             <h1 class="blog-title">Will Custode's Blog</h1>
+            <p class="text-muted intro-text">Simple notes about software engineering, game development, and architecture.</p>
         </header>
-        <section>
+        <section aria-label="Blog posts">
             <div class="list-group post-list">
                 <a href="blog/bizio-development-continues.html" class="list-group-item list-group-item-action">
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-                        <h3 class="post-title">Bizio Development Continues!</h3>
-                        <span class="text-muted post-date">2025-02-13</span>
+                    <div class="post-list-row">
+                        <h2 class="post-title">Bizio Development Continues</h2>
+                        <time class="post-date" datetime="2025-02-13">2025-02-13</time>
                     </div>
-                    <p class="post-subtitle text-muted">An explanation of the 6 year development freeze on Bizio</p>
+                    <p class="post-subtitle text-muted">It&#39;s been a long time since I posted any updates on Bizio development, and I&#39;m excited to say the project continues! Here&#39;s what I want to cover in this post:</p>
                 </a>
                 <a href="blog/lets-play-bizio-developer-edition-1.html" class="list-group-item list-group-item-action">
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-                        <h3 class="post-title">Let's Play Bizio: Developer Edition 1</h3>
-                        <span class="text-muted post-date">2018-6-16</span>
+                    <div class="post-list-row">
+                        <h2 class="post-title">Let&#39;s Play Bizio: Developer Edition 1</h2>
+                        <time class="post-date" datetime="2018-06-16">2018-06-16</time>
                     </div>
-                    <p class="post-subtitle text-muted">A first look at Bizio, a business management simulation game.</p>
+                    <p class="post-subtitle text-muted">It’s been a long time coming but I’ve finally recorded the first demo of Bizio. In this half-hour special we’ll start a company with Will Smith, tackle an easy portfol...</p>
                 </a>
                 <a href="blog/some-linq-tips.html" class="list-group-item list-group-item-action">
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-                        <h3 class="post-title">Some Linq Tips</h3>
-                        <span class="text-muted post-date">2015-9-13</span>
+                    <div class="post-list-row">
+                        <h2 class="post-title">Some Linq Tips</h2>
+                        <time class="post-date" datetime="2015-09-13">2015-09-13</time>
                     </div>
-                    <p class="post-subtitle text-muted">Enhance your .NET coding with these powerful LINQ tricks.</p>
+                    <p class="post-subtitle text-muted">Since its introduction alongside Visual Studio 2008, Linq has made many common programming efforts a breeze. As it has developed, Linq has become a powerful tool for i...</p>
                 </a>
                 <a href="blog/a-robust-inotifypropertychanged-implementation.html" class="list-group-item list-group-item-action">
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-                        <h3 class="post-title">A Robust INotifyPropertyChanged Implementation</h3>
-                        <span class="text-muted post-date">2015-7-24</span>
+                    <div class="post-list-row">
+                        <h2 class="post-title">A Robust INotifyPropertyChanged Implementation</h2>
+                        <time class="post-date" datetime="2015-07-24">2015-07-24</time>
                     </div>
-                    <p class="post-subtitle text-muted">Create dynamic, change-aware UIs with this robust implementation.</p>
+                    <p class="post-subtitle text-muted">Today I’d like to share with you one of my most valued base classes when developing a WPF or WinRT application. Given that WPF applications are intrinsically designed...</p>
                 </a>
                 <a href="blog/creating-an-ideal-logging-system.html" class="list-group-item list-group-item-action">
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-                        <h3 class="post-title">Creating an Ideal Logging System</h3>
-                        <span class="text-muted post-date">2015-7-17</span>
+                    <div class="post-list-row">
+                        <h2 class="post-title">Creating an Ideal Logging System</h2>
+                        <time class="post-date" datetime="2015-07-17">2015-07-17</time>
                     </div>
-                    <p class="post-subtitle text-muted">Design a logging system that is efficient and scalable.</p>
+                    <p class="post-subtitle text-muted">This is the first article I am writing and decided to tackle a fairly straightforward topic. Every application I’ve worked on that was larger than a proof-of-concept b...</p>
                 </a>
             </div>
         </section>
-        <footer class="social-links mt-5">
-            <a href="https://www.linkedin.com/in/wjcustode/" target="_blank">
+        <footer class="social-links mt-5" aria-label="Social links">
+            <a href="https://www.linkedin.com/in/wjcustode/" target="_blank" rel="noopener noreferrer">
                 <img src="https://content.linkedin.com/content/dam/me/business/en-us/amp/brand-site/v2/bg/LI-Bug.svg.original.svg" alt="LinkedIn">
             </a>
-            <a href="https://github.com/willborgium" target="_blank">
+            <a href="https://github.com/willborgium" target="_blank" rel="noopener noreferrer">
                 <img src="https://github.githubassets.com/assets/GitHub-Mark-ea2971cee799.png" alt="GitHub">
             </a>
-            <a href="https://gitlab.com/Willborgium" target="_blank">
+            <a href="https://gitlab.com/Willborgium" target="_blank" rel="noopener noreferrer">
                 <img src="https://images.ctfassets.net/xz1dnu24egyd/1IRkfXmxo8VP2RAE5jiS1Q/ea2086675d87911b0ce2d34c354b3711/gitlab-logo-500.png" alt="GitLab Willborgium">
             </a>
-            <a href="https://gitlab.com/black-plain-games" target="_blank">
+            <a href="https://gitlab.com/black-plain-games" target="_blank" rel="noopener noreferrer">
                 <img src="https://images.ctfassets.net/xz1dnu24egyd/6P0YId0C3ofFPyO0FaBhxl/4cd062515399f22779171cf661097319/gitlab-logo-600.png" alt="GitLab Black Plain Games">
             </a>
         </footer>
-    </div>
+    </main>
 </body>
 </html>
