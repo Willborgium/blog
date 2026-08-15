@@ -1,7 +1,4 @@
-# Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
-# More GitHub Actions for Azure: https://github.com/Azure/actions
-
-name: Build and deploy to Azure
+name: Build and deploy to Cloudflare Pages
 
 on:
   push:
@@ -11,11 +8,17 @@ on:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      deployments: write
+
+    env:
+      CLOUDFLARE_PAGES_PROJECT_NAME: wjcustode-blog
 
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up .NET Core
+      - name: Set up .NET
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: "8.0.x"
@@ -26,16 +29,13 @@ jobs:
       - name: Generate blog content
         run: dotnet run --project Blog/Blog.Generator/Blog.Generator.csproj --configuration Release
 
-      - name: Build with dotnet
-        run: dotnet build Blog/Blog.Web/Blog.Web.csproj --configuration Release
+      - name: Validate web project
+        run: dotnet build Blog/Blog.Web/Blog.Web.csproj --configuration Release --no-restore
 
-      - name: dotnet publish
-        run: dotnet publish Blog/Blog.Web/Blog.Web.csproj -c Release -o ./publish
-
-      - name: Deploy to Azure Web App
-        uses: azure/webapps-deploy@v2
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v3
         with:
-          app-name: "wjcustode-blog"
-          slot-name: "production"
-          publish-profile: ${{ secrets.AzureAppService_PublishProfile_27c3af1d074549ab838e8aafcba03988 }}
-          package: ./publish
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
+          command: pages deploy Blog/Blog.Web/wwwroot --project-name=${{ env.CLOUDFLARE_PAGES_PROJECT_NAME }}
