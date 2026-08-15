@@ -19,7 +19,7 @@ namespace Blog.Generator
         {
             var paths = ResolvePaths(args);
 
-            Directory.CreateDirectory(paths.OutputDirectory);
+            PrepareOutput(paths);
 
             var posts = new List<BlogPost>();
 
@@ -38,7 +38,7 @@ namespace Blog.Generator
 
             foreach (var post in posts)
             {
-                var outputPath = Path.Combine(paths.OutputDirectory, $"{post.Slug}.html");
+                var outputPath = Path.Combine(paths.PostOutputDirectory, $"{post.Slug}.html");
                 Console.WriteLine($">> Writing {outputPath}");
 
                 var output = string.Format(
@@ -58,6 +58,69 @@ namespace Blog.Generator
 
             Console.WriteLine($">> Writing {paths.IndexOutputPath}");
             await File.WriteAllTextAsync(paths.IndexOutputPath, indexOutput);
+
+            CopyStaticAssets(paths);
+        }
+
+        private static void PrepareOutput(Paths paths)
+        {
+            Directory.CreateDirectory(paths.SiteRootDirectory);
+
+            if (Directory.Exists(paths.PostOutputDirectory))
+            {
+                Directory.Delete(paths.PostOutputDirectory, recursive: true);
+            }
+
+            Directory.CreateDirectory(paths.PostOutputDirectory);
+        }
+
+        private static void CopyStaticAssets(Paths paths)
+        {
+            if (!Directory.Exists(paths.StaticAssetsSourceDirectory))
+            {
+                return;
+            }
+
+            foreach (var directoryPath in Directory.EnumerateDirectories(paths.StaticAssetsSourceDirectory, "*", SearchOption.TopDirectoryOnly))
+            {
+                var directoryName = Path.GetFileName(directoryPath);
+                if (directoryName.Equals("blog", StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+
+                CopyDirectory(directoryPath, Path.Combine(paths.SiteRootDirectory, directoryName));
+            }
+
+            foreach (var filePath in Directory.EnumerateFiles(paths.StaticAssetsSourceDirectory, "*", SearchOption.TopDirectoryOnly))
+            {
+                var fileName = Path.GetFileName(filePath);
+                if (fileName.Equals("index.html", StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+
+                var outputPath = Path.Combine(paths.SiteRootDirectory, fileName);
+                Console.WriteLine($">> Copying {outputPath}");
+                File.Copy(filePath, outputPath, overwrite: true);
+            }
+        }
+
+        private static void CopyDirectory(string sourceDirectory, string destinationDirectory)
+        {
+            Directory.CreateDirectory(destinationDirectory);
+
+            foreach (var filePath in Directory.EnumerateFiles(sourceDirectory, "*", SearchOption.TopDirectoryOnly))
+            {
+                var destinationPath = Path.Combine(destinationDirectory, Path.GetFileName(filePath));
+                File.Copy(filePath, destinationPath, overwrite: true);
+            }
+
+            foreach (var nestedDirectory in Directory.EnumerateDirectories(sourceDirectory, "*", SearchOption.TopDirectoryOnly))
+            {
+                var destinationPath = Path.Combine(destinationDirectory, Path.GetFileName(nestedDirectory));
+                CopyDirectory(nestedDirectory, destinationPath);
+            }
         }
 
         private async Task<BlogPost> ParsePostAsync(string inputPath)
@@ -364,12 +427,18 @@ namespace Blog.Generator
                 ? args[0]
                 : Path.Combine(repositoryRoot, "raw");
 
+            var siteRootDirectory = args?.Length > 1
+                ? Path.GetFullPath(args[1])
+                : Path.Combine(repositoryRoot, "site");
+
             return new Paths(
                 InputDirectory: inputDirectory,
-                OutputDirectory: Path.Combine(solutionDirectory, "Blog.Web", "wwwroot", "blog"),
+                SiteRootDirectory: siteRootDirectory,
+                PostOutputDirectory: Path.Combine(siteRootDirectory, "blog"),
+                StaticAssetsSourceDirectory: Path.Combine(solutionDirectory, "Blog.Web", "wwwroot"),
                 PostTemplatePath: Path.Combine(AppContext.BaseDirectory, "blog-post-template.html"),
                 IndexTemplatePath: Path.Combine(AppContext.BaseDirectory, "blog-index-template.html"),
-                IndexOutputPath: Path.Combine(solutionDirectory, "Blog.Web", "wwwroot", "index.html"));
+                IndexOutputPath: Path.Combine(siteRootDirectory, "index.html"));
         }
 
         private static string FindDirectoryContaining(string startDirectory, string targetFile)
@@ -406,7 +475,9 @@ namespace Blog.Generator
 
         private record Paths(
             string InputDirectory,
-            string OutputDirectory,
+            string SiteRootDirectory,
+            string PostOutputDirectory,
+            string StaticAssetsSourceDirectory,
             string PostTemplatePath,
             string IndexTemplatePath,
             string IndexOutputPath);

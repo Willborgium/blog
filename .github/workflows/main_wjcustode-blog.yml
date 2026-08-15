@@ -1,20 +1,11 @@
-name: Build and deploy to Cloudflare Pages
+name: Validate static site generation
 
 on:
-  push:
-    branches:
-      - main
   workflow_dispatch:
 
 jobs:
-  build-and-deploy:
+  validate-static-site:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      deployments: write
-
-    env:
-      CLOUDFLARE_PAGES_PROJECT_NAME: blog
 
     steps:
       - uses: actions/checkout@v4
@@ -27,16 +18,8 @@ jobs:
       - name: Restore solution
         run: dotnet restore Blog/Blog.sln
 
-      - name: Generate blog content
+      - name: Generate static site
         run: dotnet run --project Blog/Blog.Generator/Blog.Generator.csproj --configuration Release
 
-      - name: Validate web project
-        run: dotnet build Blog/Blog.Web/Blog.Web.csproj --configuration Release --no-restore
-
-      - name: Deploy to Cloudflare Pages
-        uses: cloudflare/wrangler-action@v3
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
-          command: pages deploy Blog/Blog.Web/wwwroot --project-name=${{ env.CLOUDFLARE_PAGES_PROJECT_NAME }}
+      - name: Validate generated output exists
+        run: test -f site/index.html && test -d site/blog && test -d site/css
