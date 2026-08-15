@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+  workflow_dispatch:
 
 jobs:
   build-and-deploy:
@@ -13,7 +14,7 @@ jobs:
       deployments: write
 
     env:
-      CLOUDFLARE_PAGES_PROJECT_NAME: wjcustode-blog
+      CLOUDFLARE_PAGES_PROJECT_NAME: blog
 
     steps:
       - uses: actions/checkout@v4
